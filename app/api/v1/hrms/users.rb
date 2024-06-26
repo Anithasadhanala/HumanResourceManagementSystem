@@ -40,6 +40,7 @@ class V1::Hrms::Users < Grape::API
 
       requires :employee_supervisors_attributes, type: Hash do
         requires :supervisor_id, type: Integer
+        requires :secondary_supervisor_id, type: Integer
       end
 
       requires :bank_credentials_attributes, type: Hash do

@@ -3,14 +3,14 @@ class V1::Hrms::PayrollHistories < Grape::API
 
   resources :employees do
     route_param :employee_id do
-      resources :credit_payroll do
+      resources :credit_payrolls do
 
         # Endpoint to get all payroll_histories for a specific employee----------------------------------------------------------------------------------
         desc 'Return all payroll_histories for a specific employee'
 
         get do
           payroll_histories = User.new.get_all_payroll_histories(params[:employee_id])
-          present payroll_histories, with: V1::Entities::PayrollHistory
+          present payroll_histories, with: V1::Entities::PayrollHistory, type: :full
         end
 
         # Endpoint to get a specific payroll_history by ID for a specific employee----------------------------------------------------------------------
@@ -32,7 +32,6 @@ class V1::Hrms::PayrollHistories < Grape::API
         end
 
         post do
-          puts(params,"++++++++++++++++++++++++++++++++++++")
           payroll_history = PayrollHistory.new.create_payroll_history(params)
           present payroll_history, with: V1::Entities::PayrollHistory,  type: :full
         end

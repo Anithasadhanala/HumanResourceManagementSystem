@@ -2,6 +2,8 @@ class PayrollHistory < ApplicationRecord
   belongs_to :payroll
 
 
+
+
   def payroll_calculation(employee_id)
     base_payroll = Payroll.where(employee_id: employee_id).pluck(:base_payroll).first || 0
     allowances = AllowanceAndDeduction.where(employee_id: employee_id, is_deduction: false, is_active: true).sum(:amount) || 0
@@ -18,13 +20,17 @@ class PayrollHistory < ApplicationRecord
 
     final_payroll = payroll_calculation(params[:employee_id])
     payroll_id = Payroll.where(employee_id: params[:employee_id]).pluck(:id).first
-    puts(payroll_id,"))))))))))))))))))))))))))))))))))))))))))))))))))")
     User.find(params[:employee_id])
-    PayrollHistory.create!(
-      payroll_id: payroll_id,
-      bank_credential_id: params[:bank_credential_id],
-      payroll_predicted: final_payroll
-    )
+    bank_credential = BankCredential.find(params[:bank_credential_id])
+    if payroll_id && bank_credential
+      PayrollHistory.create!(
+        payroll_id: payroll_id,
+        bank_credential_id: params[:bank_credential_id],
+        payroll_predicted: final_payroll
+      )
+    else
+      raise RuntimeError, {message: "bank credential is Invalid Record!!!"}
+    end
   end
 
 

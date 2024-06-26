@@ -8,6 +8,7 @@ class Root < Grape::API
   helpers AuthenticationHelper
   include V1::Exceptions::ExceptionHandler
 
+
   mount V1::Hrms::Users
   mount V1::Hrms::Departments
   mount V1::Hrms::JobPositions
@@ -20,4 +21,6 @@ class Root < Grape::API
   mount V1::Hrms::Hikes
   mount V1::Hrms::PayrollHistories
   mount V1::Hrms::PositionHistories
+  mount V1::Hrms::Payrolls
+  mount V1::Hrms::Employees
 end

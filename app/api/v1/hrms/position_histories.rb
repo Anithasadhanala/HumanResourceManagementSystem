@@ -10,7 +10,7 @@ class V1::Hrms::PositionHistories < Grape::API
 
         get do
           position_histories = User.new.get_all_position_histories(params[:employee_id])
-          present position_histories, with: V1::Entities::PositionHistory
+          present position_histories, with: V1::Entities::PositionHistory, type: :full
         end
 
         # Endpoint to get a specific position_history by ID for a specific employee----------------------------------------------------------------------
@@ -34,7 +34,6 @@ class V1::Hrms::PositionHistories < Grape::API
         end
 
         post do
-          puts(params,"++++++++++++++++++++++++++++++++++++")
           position_history = PositionHistory.new.create_position_history(params)
           present position_history, with: V1::Entities::PositionHistory,  type: :full
         end
@@ -42,10 +41,9 @@ class V1::Hrms::PositionHistories < Grape::API
         # Endpoint to update a specific position_history for a specific employee------------------------------------------------------------------------
         desc 'Update a specific position_history for a specific employee'
         params do
-          optional :type, type: String
-          optional :is_deduction, type: Boolean
-          optional :amount, type: Integer
-          optional :is_active, type: Boolean
+          optional :to_role_id, type: Integer
+          optional :switch_reason, type: String
+          optional :switch_type, type: String
         end
 
         put ':id' do

@@ -1,16 +1,5 @@
-# This file is auto-generated from the current state of the database. Instead
-# of editing this file, please use the migrations feature of Active Record to
-# incrementally modify your database, and then regenerate this schema definition.
-#
-# This file is the source Rails uses to define your schema when running `bin/rails
-# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
-# be faster and is potentially less error prone than running all of your
-# migrations from scratch. Old migrations may fail to apply correctly if those
-# migrations use external dependencies or application code.
-#
-# It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_26_172529) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_26_203109) do
   create_table "addresses", force: :cascade do |t|
     t.string "d_no", null: false
     t.string "landmark", null: false
@@ -73,6 +62,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_172529) do
     t.integer "supervisor_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "secondary_supervisor_id"
     t.index ["employee_id"], name: "index_employee_supervisors_on_employee_id"
     t.index ["supervisor_id"], name: "index_employee_supervisors_on_supervisor_id"
   end
@@ -99,16 +89,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_172529) do
     t.index ["department_id"], name: "index_employees_on_department_id"
     t.index ["job_position_id"], name: "index_employees_on_job_position_id"
     t.index ["user_id"], name: "index_employees_on_user_id"
-  end
-
-  create_table "employees_supervisors", force: :cascade do |t|
-    t.integer "employee_id", null: false
-    t.integer "supervisor_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["employee_id", "supervisor_id"], name: "index_employees_supervisors_on_employee_id_and_supervisor_id", unique: true
-    t.index ["employee_id"], name: "index_employees_supervisors_on_employee_id"
-    t.index ["supervisor_id"], name: "index_employees_supervisors_on_supervisor_id"
   end
 
   create_table "hikes", force: :cascade do |t|
@@ -219,12 +199,11 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_172529) do
   add_foreign_key "allowance_and_deductions", "users", column: "employee_id"
   add_foreign_key "bank_credentials", "users", column: "employee_id"
   add_foreign_key "employee_supervisors", "users", column: "employee_id"
+  add_foreign_key "employee_supervisors", "users", column: "secondary_supervisor_id"
   add_foreign_key "employee_supervisors", "users", column: "supervisor_id"
   add_foreign_key "employees", "departments"
   add_foreign_key "employees", "job_positions"
   add_foreign_key "employees", "users"
-  add_foreign_key "employees_supervisors", "users", column: "employee_id"
-  add_foreign_key "employees_supervisors", "users", column: "supervisor_id"
   add_foreign_key "hikes", "users", column: "employee_id"
   add_foreign_key "job_histories", "employees"
   add_foreign_key "job_histories", "job_positions", column: "from_role_id"

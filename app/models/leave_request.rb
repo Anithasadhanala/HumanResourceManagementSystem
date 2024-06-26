@@ -37,7 +37,7 @@ class LeaveRequest < ApplicationRecord
     leave_request = LeaveRequest.find(params[:id])
    if leave_request.requestee_id == params[:requestee_id]
       leave_request.update(params.except(:status))
-   elsif leave_request.approver_id == params[:requestee_id].to_i
+   elsif leave_request.approver_id == params[:requestee_id].to_i # chnage here
       if params[:status]
         if !status_is_valid_enum(params[:status])
           ("not a valid status value that is requested to update")

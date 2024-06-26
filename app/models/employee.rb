@@ -11,13 +11,26 @@ class Employee < ApplicationRecord
 
   scope :active, -> { where(is_active: true) }
 
+
+  def find_by_id(employee_id)
+    Employee.find(employee_id)
+  end
+
+
+  def find_and_update_employee(params)
+    find_by_id(params[:id])
+    employee = Employee.update!(params.except(:job_position_id))
+    employee
+  end
+
+
   def update_employee_job_position(params)
     employee = Employee.find(params[:employee_id])
     if !employee.job_position_id == params[:to_role_id]
     employee.update!(job_position_id: params[:to_role_id])
     employee
     else
-
+      raise RuntimeError, {message: "You cannot switch an employee position to itself!!!"}
     end
   end
 
@@ -55,6 +68,7 @@ class Employee < ApplicationRecord
       end
     end
   end
+
 
 
 

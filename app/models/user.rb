@@ -12,6 +12,7 @@ class User < ApplicationRecord
   has_many :allowance_and_deductions
   has_one :hike
   has_many :position_histories
+  has_one :payroll
 
 
   accepts_nested_attributes_for :addresses, allow_destroy: true
@@ -74,7 +75,9 @@ class User < ApplicationRecord
 
 
   def create_associated_employee_supervisors
-      EmployeeSupervisor.create!(supervisor_id: employee_supervisors_attributes[:supervisor_id], employee_id: id)
+      EmployeeSupervisor.create!(supervisor_id: employee_supervisors_attributes[:supervisor_id],
+                                 employee_id: id,
+                                 secondary_supervisor_id: employee_supervisors_attributes[:secondary_supervisor_id])
   end
 
   def create_associated_payroll
@@ -170,7 +173,37 @@ class User < ApplicationRecord
         raise ActiveRecord::RecordNotFound
       end
     end
-
   end
+
+
+
+  def get_all_position_histories(user_id)
+    User.find(user_id)
+    PositionHistory.where(employee_id: user_id)
+  end
+
+  def get_position_history(user_id, id)
+    User.find(user_id)
+    position_history = PositionHistory.find_by(employee_id: user_id, id: id)
+    if position_history
+      position_history
+    else
+      raise ActiveRecord::RecordNotFound
+    end
+  end
+
+
+  def get_all_payroll_histories(employee_id)
+    User.find(employee_id)
+    payrolls = Payroll.where(employee_id: employee_id).pluck(:id)
+    PayrollHistory.where(payroll_id: payrolls)
+  end
+
+  def get_payroll_history(user_id, id)
+    User.find(user_id)
+    PayrollHistory.find(id)
+  end
+
+
 end
 
