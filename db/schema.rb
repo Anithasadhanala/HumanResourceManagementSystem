@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_26_064604) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_26_121034) do
   create_table "addresses", force: :cascade do |t|
     t.string "d_no", null: false
     t.string "landmark", null: false
@@ -111,6 +111,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_064604) do
     t.index ["supervisor_id"], name: "index_employees_supervisors_on_supervisor_id"
   end
 
+  create_table "hikes", force: :cascade do |t|
+    t.integer "employee_id", null: false
+    t.string "reason", null: false
+    t.integer "percentage_value", null: false
+    t.boolean "is_active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id"], name: "index_hikes_on_employee_id"
+  end
+
   create_table "job_histories", force: :cascade do |t|
     t.integer "employee_id", null: false
     t.integer "from_role_id", null: false
@@ -157,6 +167,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_064604) do
     t.boolean "is_active", default: true, null: false
   end
 
+  create_table "payroll_histories", force: :cascade do |t|
+    t.integer "payroll_id"
+    t.integer "payroll_predicted", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["payroll_id"], name: "index_payroll_histories_on_payroll_id"
+  end
+
   create_table "payrolls", force: :cascade do |t|
     t.integer "employee_id", null: false
     t.integer "base_payroll", null: false
@@ -192,12 +210,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_064604) do
   add_foreign_key "employees", "users"
   add_foreign_key "employees_supervisors", "users", column: "employee_id"
   add_foreign_key "employees_supervisors", "users", column: "supervisor_id"
+  add_foreign_key "hikes", "users", column: "employee_id"
   add_foreign_key "job_histories", "employees"
   add_foreign_key "job_histories", "job_positions", column: "from_role_id"
   add_foreign_key "job_histories", "job_positions", column: "to_role_id"
   add_foreign_key "leave_requests", "leaves", column: "leave_id"
   add_foreign_key "leave_requests", "users", column: "approver_id"
   add_foreign_key "leave_requests", "users", column: "requestee_id"
+  add_foreign_key "payroll_histories", "payrolls"
   add_foreign_key "payrolls", "users", column: "employee_id"
   add_foreign_key "user_jwt_tokens", "users"
 end

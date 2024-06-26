@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :leave_requests
   has_many :employee_supervisors
   has_many :allowance_and_deductions
+  has_one :hike
 
   accepts_nested_attributes_for :addresses, allow_destroy: true
   accepts_nested_attributes_for :bank_credentials, allow_destroy: true
@@ -25,13 +26,11 @@ class User < ApplicationRecord
   attr_accessor :employee_attributes
   attr_accessor :payroll_attributes
 
-
   validates :email, presence: true, uniqueness: true
   validates :password_digest, presence: true
   validates :role, presence: true
 
   scope :active, -> { where(is_active: true) }
-
 
 
 
@@ -77,8 +76,7 @@ class User < ApplicationRecord
   end
 
   def create_associated_payroll
-    puts(payroll_attributes,"/////////////////////////////////////////////////////")
-    Payroll.create!(base_payroll: payroll_attributes[:base_payroll], employee_id: id)
+      Payroll.create!(base_payroll: payroll_attributes[:base_payroll], employee_id: id)
   end
 
 
@@ -101,6 +99,7 @@ class User < ApplicationRecord
       department_id: employee_attributes[:department_id],
       user_id: id)
   end
+
 
     def create_user(params)
         User.create!(
@@ -142,10 +141,8 @@ class User < ApplicationRecord
   end
 
   def get_allowance_and_deduction(user_id, compensation_id)
-    puts(user_id,"++++++++++++++++++++++++++++++++")
     user = User.find(user_id)
     if user
-      puts(")))))))))))))))))))))))")
       allowance_deduction = AllowanceAndDeduction.find_by(id: compensation_id, is_active: true, employee_id: user.id)
       if allowance_deduction
         allowance_deduction
@@ -161,5 +158,17 @@ class User < ApplicationRecord
   end
 
 
+  def get_hike(user_id, hike_id)
+    user = User.find(user_id)
+    if user
+      allowance_deduction = Hike.find_by(id: hike_id, is_active: true, employee_id: user.id)
+      if allowance_deduction
+        allowance_deduction
+      else
+        raise ActiveRecord::RecordNotFound
+      end
+    end
+
+  end
 end
 

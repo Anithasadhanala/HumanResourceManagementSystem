@@ -17,4 +17,5 @@ class Root < Grape::API
   mount V1::Hrms::Leaves
   mount V1::Hrms::LeaveRequests
   mount V1::Hrms::AllowanceAndDeductions
+  mount V1::Hrms::Hikes
 end

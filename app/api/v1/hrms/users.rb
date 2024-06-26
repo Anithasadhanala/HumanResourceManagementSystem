@@ -55,13 +55,12 @@ class V1::Hrms::Users < Grape::API
       requires :payroll_attributes, type: Hash do
         requires :base_payroll, type: Integer
       end
-
-
     end
 
     post :signup do
       begin
-        User.new.create_user(params)
+        user = User.new.create_user(params)
+        present user, with: V1::Entities::User, type: :full
         end
     end
 

@@ -6,7 +6,7 @@ class BankCredential < ApplicationRecord
   enum account_type: {
     salary: 'salary',
     personal: 'personal',
-    pf: 'pf'
+    family: 'family'
   }
 
   def account_type_is_valid_enum(type)
@@ -18,11 +18,9 @@ class BankCredential < ApplicationRecord
   scope :active, -> { where(is_active: true) }
 
   def create_bank_credential(params)
-    puts(account_type_is_valid_enum(params[:account_type]),"+++++++++++++++++++")
-    puts(BankCredential.active.where(account_type: params[:account_type], employee_id: params[:employee_id]),"8888888888888888888888888")
+
     existing_inactive_record = account_type_is_valid_enum(params[:account_type]) && BankCredential.find_by(employee_id: params[:employee_id],account_type: params[:account_type], is_active: true)==nil
 
-    puts(existing_inactive_record,"@@@@@@@@@@@@@@@@@")
     if !existing_inactive_record
       raise ActiveRecord::RecordInvalid
     else

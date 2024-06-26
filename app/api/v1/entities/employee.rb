@@ -15,9 +15,6 @@ class V1::Entities::Employee < Grape::Entity
   expose :employment_type
   expose :job_position_id
   expose :department_id
-  expose :user_id
-
-  expose :user, using: V1::Entities::User
 end
 
 

@@ -29,6 +29,7 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
         before { authenticate_admin! }
         params do
           requires :compensation_type, type: String
+          requires :amount, type: Integer
           requires :is_deduction, type: Boolean
           optional :is_active, type: Boolean, default: true
         end
@@ -43,11 +44,11 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
         params do
           optional :type, type: String
           optional :is_deduction, type: Boolean
+          optional :amount, type: Integer
           optional :is_active, type: Boolean
         end
 
         put ':id' do
-
           allowance_and_deduction = AllowanceAndDeduction.new.find_and_update_allowance_and_deduction(params)
           present allowance_and_deduction, with: V1::Entities::AllowanceAndDeduction
         end
