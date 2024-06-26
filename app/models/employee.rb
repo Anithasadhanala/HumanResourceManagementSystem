@@ -4,8 +4,50 @@ class Employee < ApplicationRecord
   belongs_to :job_position
   belongs_to :department
   has_many :addresses
-  has_many :bank_credentials
+  has_many :job_histories
 
   validates :user_name,:first_name,:last_name, :phone, :hired_at, :personal_email, :emergency_contact_phone, :emergency_contact_name,
-            :gender, :department_id,:job_position_id, :user_id,:experience_in_months, :qualifications, :employee_type, :employment_type, presence: true
+            :gender, :department_id,:job_position_id,:experience_in_months, :qualifications, :employee_type, :employment_type, presence: true
+
+  scope :active, -> { where(is_active: true) }
+
+
+  def get_job_history(employee_id,job_history_id)
+    employee = Employee.find(employee_id)
+    if employee
+      employee.job_histories.find( job_history_id)
+    end
+  end
+
+  def get_all_job_histories(employee_id)
+    employee = Employee.find(employee_id)
+    if employee
+    employee.job_histories
+    end
+  end
+
+
+  def get_all_bank_credentials(employee_id)
+    employee = Employee.find(employee_id)
+    if employee
+      employee.bank_credentials.active
+    end
+  end
+
+
+  def get_bank_credential(employee_id, job_history_id)
+    employee = Employee.find(employee_id)
+    if employee
+      bank_credential = employee.bank_credentials.active.find_by(id: job_history_id)
+      if bank_credential
+        bank_credential
+      else
+        raise ActiveRecord::RecordNotFound
+      end
+    end
+  end
+
+
+
+
 end

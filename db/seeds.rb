@@ -1,10 +1,20 @@
+addresses_data = [
+  {
+    d_no: '123',
+    landmark: 'Near P---------ark',
+    city: 'New York',
+    zip_code: '10001',
+    state: 'NY',
+    country: 'USA',
+    created_at: Time.zone.now,
+    updated_at: Time.zone.now,
+    is_active: true,
+    is_permanent: true,
+employee_id: 3
+  }
+]
 
-BankCredential.create!(
-  bank_name: "Bank of America",
-  bank_branch_place: "New York",
-  account_number: "1234567890",
-  ifsc_code: "BOA12345",
-  bank_branch_code: "001",
-  account_type: "personal_account",
-  is_active: true
-)
+# Create addresses records
+addresses_data.each do |address_data|
+  Address.create!(address_data)
+end

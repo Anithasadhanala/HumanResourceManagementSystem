@@ -1,6 +1,9 @@
-
-class V1::Exceptions::CustomError < StandardError
-  def initialize(message = "This is a custom error")
-    super(message)
+module V1
+  module Exceptions
+    class CustomError < StandardError
+      def initialize(message = nil)
+        super( "A custom error occurred---------------")
+      end
+    end
   end
 end

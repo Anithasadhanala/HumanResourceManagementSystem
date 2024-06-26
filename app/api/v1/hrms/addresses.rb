@@ -1,4 +1,6 @@
 class V1::Hrms::Addresses < Grape::API
+  before { authenticate_user! }
+
   resources :employees do
     route_param :employee_id do
       resources :addresses do
@@ -37,7 +39,8 @@ class V1::Hrms::Addresses < Grape::API
 
         post do
           address = Address.new.create_address(params)
-          present address, with: V1::Entities::Address
+          present address, with: V1::Entities::Address, type: :full
+
         end
 
         # Endpoint to update a specific address for a specific employee------------------------------------------------------------------------
@@ -53,7 +56,7 @@ class V1::Hrms::Addresses < Grape::API
         end
 
         put ':id' do
-          address = Address.find_and_update_address(params)
+          address = Address.new.find_and_update_address(params)
           present address, with: V1::Entities::Address
         end
 

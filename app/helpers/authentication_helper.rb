@@ -1,14 +1,16 @@
 module AuthenticationHelper
 
-
   def authenticate_user!
-    raise  AuthenticationError unless current_user
+     error!('Unauthorized user', 401) unless current_user
+  end
+
+  def authenticate_admin!
+     error!('Unauthorized admin', 401) unless Current.user.role == "admin"
   end
 
   def current_user
     header = request.headers['authorization']
     token = header.split(' ').last if header
-    raise  AuthenticationError unless token
     return error!('Unauthorized', 401) unless token
 
     begin
@@ -17,22 +19,14 @@ module AuthenticationHelper
         return error!('Token has expired', 401)
       end
 
-      # token decoding
-      data = JWT.decode(token, "SECRET", true, { algorithm: 'HS256' })
-
       # Check if the token is blacklisted
       if UserJwtToken.exists?(jwt_token: token, is_active: false)
-        raise AuthenticationError
-        error!('Unauth---------------------------------------------orized', 401)
+        error!('Token is deleted', 401)
       else
+        data = JWT.decode(token, "SECRET", true, { algorithm: 'HS256' })
         Current.user = User.find(data[0]['user_id'])
         @current_jwt_token = token
       end
-
-    rescue JWT::ExpiredSignature
-      error!('Token has expired', 401)
-    rescue JWT::DecodeError
-      error!('Unauthorized', 401)
     end
   end
 

@@ -1,5 +1,5 @@
-class V1::Hrms::Departments < Grape::API
-
+class V1::Hrms::Departments < BaseApi
+  before { authenticate_user! }
 
   resources :departments do
 
@@ -33,7 +33,7 @@ class V1::Hrms::Departments < Grape::API
 
     # Endpoint to create a new department---------------------------------------------------------------------------------------
     desc 'Create a new department'
-
+    before { authenticate_admin! }
     params do
       requires :name, type: String
       requires :description, type: String
@@ -41,7 +41,7 @@ class V1::Hrms::Departments < Grape::API
 
     post do
       department = Department.new.create_department(params)
-      present department, with: V1::Entities::Department
+      present department, with: V1::Entities::Department, type: :full
     end
 
 
@@ -71,6 +71,5 @@ class V1::Hrms::Departments < Grape::API
       department= Department.new.find_and_destroy_if_no_employees(params[:id])
       department
     end
-
   end
 end

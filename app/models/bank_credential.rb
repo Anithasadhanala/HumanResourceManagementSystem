@@ -1,59 +1,50 @@
 class BankCredential < ApplicationRecord
-  belongs_to :employee
+
+  validates :account_type, presence: true
+  belongs_to :user, class_name: 'User', foreign_key: 'employee_id'
 
   enum account_type: {
-    personal: 'PERSONAL',
-    salary: 'SALARY',
-    pf: 'PF'
+    salary: 'salary',
+    personal: 'personal',
+    pf: 'pf'
   }
 
-  validates :bank_name, :bank_branch_place, :account_number, :ifsc_code, :bank_branch_code, :account_type,:employee_id,:is_active,presence: true
+  def account_type_is_valid_enum(type)
+    self.class.account_types.key?(type.to_sym)
+  end
+
+  validates :bank_name, :account_number, :ifsc_code, :bank_branch_code,:bank_name, :account_type,:employee_id,:is_active,presence: true
 
   scope :active, -> { where(is_active: true) }
 
-  def get_all_bank_credentials(employee_id)
-    BankCredential.where(employee_id: employee_id).active
+  def create_bank_credential(params)
+    puts(account_type_is_valid_enum(params[:account_type]),"+++++++++++++++++++")
+    puts(BankCredential.active.where(account_type: params[:account_type], employee_id: params[:employee_id]),"8888888888888888888888888")
+    existing_inactive_record = account_type_is_valid_enum(params[:account_type]) && BankCredential.find_by(employee_id: params[:employee_id],account_type: params[:account_type], is_active: true)==nil
+
+    puts(existing_inactive_record,"@@@@@@@@@@@@@@@@@")
+    if !existing_inactive_record
+      raise ActiveRecord::RecordInvalid
+    else
+      BankCredential.create!(params)
+      end
   end
 
-  def find_by_id(employee_id,id)
-    bank_credential = BankCredential.active.find_by( id: id, employee_id: employee_id )
+
+  def find_and_update_bank_credential(params)
+
+    bank_credential = Employee.new.get_bank_credential(params[:employee_id],params[:id])
     if bank_credential
+      bank_credential.update(params)
       bank_credential
     else
       raise ActiveRecord::RecordNotFound
     end
   end
 
-  def create_bank_credential(params)
-    existing_inactive_record = BankCredential.find_by(account_type: BankCredential.account_types[params[:account_type]], is_active: true)
-
-    if existing_inactive_record
-      raise ActiveRecord::RecordInvalid
-    else
-      BankCredential.create!(
-        employee_id: params[:employee_id],
-        bank_name: params[:bank_name],
-        bank_branch_place: params[:bank_branch_place],
-        account_number: params[:account_number],
-        ifsc_code: params[:ifsc_code],
-        bank_branch_code: params[:bank_branch_code],
-        account_type: BankCredential.account_types[params[:account_type]],
-        is_active: params[:is_active])
-      end
-  end
-
-
-  def find_and_update_bank_credential(params)
-    bank_credential = BankCredential.find_by_id(params[:employee_id],params[:id])
-    if bank_credential
-      bank_credential.update(params)
-      bank_credential
-    end
-  end
-
 
   def find_and_destroy_employee_bank_credential(employee_id, id)
-    bank_credential = find_by_id(employee_id,id)
+    bank_credential = Employee.new.get_bank_credential(employee_id,id)
     if bank_credential
       bank_credential.update(is_active: false)
       { message: 'bank credential deleted successfully' }

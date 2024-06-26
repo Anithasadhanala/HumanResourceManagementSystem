@@ -10,9 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_23_085620) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_26_042114) do
   create_table "addresses", force: :cascade do |t|
-    t.integer "employee_id", null: false
     t.string "d_no", null: false
     t.string "landmark", null: false
     t.string "city", null: false
@@ -23,20 +22,21 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_23_085620) do
     t.datetime "updated_at", null: false
     t.boolean "is_active", default: true, null: false
     t.boolean "is_permanent", default: true, null: false
+    t.integer "employee_id"
     t.index ["employee_id"], name: "index_addresses_on_employee_id"
   end
 
   create_table "bank_credentials", force: :cascade do |t|
     t.integer "employee_id", null: false
     t.string "bank_name", null: false
-    t.string "bank_branch_place", null: false
-    t.text "account_number", null: false
-    t.text "ifsc_code", null: false
-    t.text "bank_branch_code", null: false
+    t.string "bank_branch", null: false
+    t.string "account_number", null: false
+    t.string "ifsc_code", null: false
+    t.string "bank_branch_code", null: false
     t.string "account_type", null: false
-    t.boolean "is_active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_active", default: true
     t.index ["employee_id"], name: "index_bank_credentials_on_employee_id"
   end
 
@@ -46,6 +46,15 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_23_085620) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_active", default: true, null: false
+  end
+
+  create_table "employee_supervisors", force: :cascade do |t|
+    t.integer "employee_id", null: false
+    t.integer "supervisor_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id"], name: "index_employee_supervisors_on_employee_id"
+    t.index ["supervisor_id"], name: "index_employee_supervisors_on_supervisor_id"
   end
 
   create_table "employees", force: :cascade do |t|
@@ -72,12 +81,77 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_23_085620) do
     t.index ["user_id"], name: "index_employees_on_user_id"
   end
 
+  create_table "employees_supervisors", force: :cascade do |t|
+    t.integer "employee_id", null: false
+    t.integer "supervisor_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id", "supervisor_id"], name: "index_employees_supervisors_on_employee_id_and_supervisor_id", unique: true
+    t.index ["employee_id"], name: "index_employees_supervisors_on_employee_id"
+    t.index ["supervisor_id"], name: "index_employees_supervisors_on_supervisor_id"
+  end
+
+  create_table "job_histories", force: :cascade do |t|
+    t.integer "employee_id", null: false
+    t.integer "from_role_id", null: false
+    t.integer "to_role_id", null: false
+    t.date "switched_at", null: false
+    t.string "switch_reason", null: false
+    t.string "switch_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id"], name: "index_job_histories_on_employee_id"
+    t.index ["from_role_id"], name: "index_job_histories_on_from_role_id"
+    t.index ["to_role_id"], name: "index_job_histories_on_to_role_id"
+  end
+
   create_table "job_positions", force: :cascade do |t|
     t.string "title", null: false
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_active", default: true, null: false
+  end
+
+  create_table "leave_requests", force: :cascade do |t|
+    t.integer "requestee_id", null: false
+    t.integer "approver_id", null: false
+    t.integer "leave_id", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.integer "working_days_covered", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approver_id"], name: "index_leave_requests_on_approver_id"
+    t.index ["leave_id"], name: "index_leave_requests_on_leave_id"
+    t.index ["requestee_id"], name: "index_leave_requests_on_requestee_id"
+  end
+
+  create_table "leaves", force: :cascade do |t|
+    t.string "title", null: false
+    t.integer "days_count", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "is_active", default: true, null: false
+  end
+
+  create_table "payrolls", force: :cascade do |t|
+    t.integer "employee_id", null: false
+    t.integer "base_payroll", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id"], name: "index_payrolls_on_employee_id"
+  end
+
+  create_table "user_jwt_tokens", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "jwt_token", null: false
+    t.boolean "is_active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_user_jwt_tokens_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -88,9 +162,21 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_23_085620) do
     t.datetime "updated_at", null: false
   end
 
-  add_foreign_key "addresses", "employees"
-  add_foreign_key "bank_credentials", "employees"
+  add_foreign_key "addresses", "users", column: "employee_id"
+  add_foreign_key "bank_credentials", "users", column: "employee_id"
+  add_foreign_key "employee_supervisors", "users", column: "employee_id"
+  add_foreign_key "employee_supervisors", "users", column: "supervisor_id"
   add_foreign_key "employees", "departments"
   add_foreign_key "employees", "job_positions"
   add_foreign_key "employees", "users"
+  add_foreign_key "employees_supervisors", "users", column: "employee_id"
+  add_foreign_key "employees_supervisors", "users", column: "supervisor_id"
+  add_foreign_key "job_histories", "employees"
+  add_foreign_key "job_histories", "job_positions", column: "from_role_id"
+  add_foreign_key "job_histories", "job_positions", column: "to_role_id"
+  add_foreign_key "leave_requests", "leaves", column: "leave_id"
+  add_foreign_key "leave_requests", "users", column: "approver_id"
+  add_foreign_key "leave_requests", "users", column: "requestee_id"
+  add_foreign_key "payrolls", "users", column: "employee_id"
+  add_foreign_key "user_jwt_tokens", "users"
 end

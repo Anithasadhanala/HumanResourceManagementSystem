@@ -1,47 +1,63 @@
 class V1::Hrms::Users < Grape::API
   format :json
 
-
   resource :users do
-
     desc 'signup a new user'
 
     params do
+      requires :email, type: String
+      requires :password, type: String
       requires :role, type: String
-      requires :employees_attributes, type: Hash do
-        requires :user_name, :first_name, :last_name,:phone, :hired_at, :personal_email, :emergency_contact_phone,
-                 :emergency_contact_name, :gender, :experience_in_months, :qualifications, :employee_type, :employment_type
+
+      requires :addresses_attributes, type: Hash do
+        requires :d_no, type: String
+        requires :landmark, type: String
+        requires :city, type: String
+        requires :zip_code, type: String
+        requires :state, type: String
+        requires :country, type: String
+        optional :is_active, type: Boolean, default: true
+        optional :is_permanent, type: Boolean, default: true
+      end
+
+      requires :employee_attributes, type: Hash do
+        requires :user_name,type: String
+        requires :first_name, type: String
+        requires  :last_name,type: String
+        requires :phone,type: String
+        requires :hired_at, type: String
+        requires :personal_email ,type: String
+        requires :emergency_contact_phone,type: String
+        requires  :emergency_contact_name,type: String
+        requires :gender,type: String
+        requires :experience_in_months,type: String
+        requires :qualifications,type: String
+        requires :employee_type,type: String
+        requires :employment_type,type: String
+        requires :job_position_id, type: Integer
+        requires :department_id, type: Integer
+        end
+
+      requires :employee_supervisors_attributes, type: Hash do
+        requires :supervisor_id, type: Integer
+      end
+
+      requires :bank_credentials_attributes, type: Hash do
+        requires :bank_name, type: String
+        requires :bank_branch, type: String
+        requires :account_number, type: String
+        requires :ifsc_code, type: String
+        requires :bank_branch_code, type: String
+        requires :account_type, type: String
+        optional :is_active, type: Boolean, default: true
       end
     end
 
     post :signup do
       begin
-        user = User.new.create_user(params)
-        present user
-      end
+        User.new.create_user(params)
+        end
     end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # Login  Endpoint of  a user ------------------------------------------------------------------------------------------------------------------
     desc 'Login user'
@@ -53,14 +69,12 @@ class V1::Hrms::Users < Grape::API
     post :login do
       user = User.find_by(email: params[:email])
       user_role = user.role
-      if user && user.authenticate(params[:password]) && User.roles[user_role] == User.roles[:buyer]
-
-        # Check for an existing valid JWT token, if exists then check for the unexpired token
+      if user && user.authenticate(params[:password])
         user_valid_token = UserJwtToken.new.get_valid_token(user.id)
         if user_valid_token
           present user_valid_token, with: V1::Entities::Login
         else
-          user_jwt = UserJwtToken.new.generate_jwt_token_and_store(user.id)
+          user_jwt = UserJwtToken.new.generate_jwt_token_and_store(user.id,user_role)
           present user_jwt, with: V1::Entities::Login
         end
       end
@@ -72,9 +86,12 @@ class V1::Hrms::Users < Grape::API
     before { authenticate_user! }
     delete :logout do
       if Current.user
-        jwt_record.update!(is_active: false)
+        Current.user.user_jwt_tokens.update_all(is_active: false)
         { message: 'Logout successful' }
+      else
+        { message: 'Not logged in' }
       end
     end
+
   end
 end

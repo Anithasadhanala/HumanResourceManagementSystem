@@ -2,7 +2,6 @@ class V1::Entities::BankCredential < Grape::Entity
   expose :id, if: { type: :full }
   expose :employee_id
   expose :bank_name
-  expose :bank_branch_place
   expose :account_number, if: { type: :full }
   expose :ifsc_code, if: { type: :full }
   expose :bank_branch_code, if: { type: :full }

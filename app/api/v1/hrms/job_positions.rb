@@ -1,5 +1,5 @@
 class V1::Hrms::JobPositions < Grape::API
-
+  before { authenticate_user! }
 
   resources :jobpositions do
 
@@ -33,7 +33,7 @@ class V1::Hrms::JobPositions < Grape::API
 
     # Endpoint to create a new job position---------------------------------------------------------------------------------------
     desc 'Create a new job position'
-
+    before { authenticate_admin! }
     params do
       requires :title, type: String
       requires :description, type: String
@@ -41,7 +41,7 @@ class V1::Hrms::JobPositions < Grape::API
 
     post do
       job_position = JobPosition.new.create_job_position(params)
-      present job_position, with: V1::Entities::JobPosition
+      present job_position, with: V1::Entities::JobPosition, type: :full
     end
 
 
