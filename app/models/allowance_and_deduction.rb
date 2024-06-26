@@ -1,7 +1,7 @@
 class AllowanceAndDeduction < ApplicationRecord
 
   belongs_to :user, class_name: 'User', foreign_key: 'employee_id'
-  validates :compensation_type,:is_deduction, presence: true
+  validates :compensation_type, presence: true
 
   scope :active, -> { where(is_active: true) }
 
@@ -34,12 +34,13 @@ def create_allowance_and_deduction(params)
   User.find(params[:employee_id])
   employee_present = AllowanceAndDeduction.find_by(employee_id: params[:employee_id], compensation_type: params[:compensation_type], is_active: true, is_deduction: params[:is_deduction])
   if employee_present
+    puts("8888888888888888888888888888888888")
     raise RuntimeError, message: "You cannot add this Type #{params[:compensation_type]}, this is already active for employee with id:  #{params[:employee_id]}"
   else
+    puts("444444444444444444444444444444444444444")
     if valid_compensation_type(params[:compensation_type], params[:is_deduction])
-      allowance_and_deduction = AllowanceAndDeduction.create!(params )
-      puts "Created allowance_and_deduction with ID: #{allowance_and_deduction.id}"
-      allowance_and_deduction
+      puts("2222222222222222222222222222222222222222")
+      AllowanceAndDeduction.create!(params)
     else
       raise RuntimeError, message: "compensation_type is not valid!!"
     end

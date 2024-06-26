@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_26_121034) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_26_172529) do
   create_table "addresses", force: :cascade do |t|
     t.string "d_no", null: false
     t.string "landmark", null: false
@@ -172,6 +172,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_121034) do
     t.integer "payroll_predicted", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "bank_credential_id", null: false
+    t.index ["bank_credential_id"], name: "index_payroll_histories_on_bank_credential_id"
     t.index ["payroll_id"], name: "index_payroll_histories_on_payroll_id"
   end
 
@@ -181,6 +183,19 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_121034) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["employee_id"], name: "index_payrolls_on_employee_id"
+  end
+
+  create_table "position_histories", force: :cascade do |t|
+    t.integer "employee_id", null: false
+    t.integer "from_role_id", null: false
+    t.integer "to_role_id", null: false
+    t.string "switch_reason", null: false
+    t.string "switch_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id"], name: "index_position_histories_on_employee_id"
+    t.index ["from_role_id"], name: "index_position_histories_on_from_role_id"
+    t.index ["to_role_id"], name: "index_position_histories_on_to_role_id"
   end
 
   create_table "user_jwt_tokens", force: :cascade do |t|
@@ -217,7 +232,11 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_121034) do
   add_foreign_key "leave_requests", "leaves", column: "leave_id"
   add_foreign_key "leave_requests", "users", column: "approver_id"
   add_foreign_key "leave_requests", "users", column: "requestee_id"
+  add_foreign_key "payroll_histories", "bank_credentials"
   add_foreign_key "payroll_histories", "payrolls"
   add_foreign_key "payrolls", "users", column: "employee_id"
+  add_foreign_key "position_histories", "job_positions", column: "from_role_id"
+  add_foreign_key "position_histories", "job_positions", column: "to_role_id"
+  add_foreign_key "position_histories", "users", column: "employee_id"
   add_foreign_key "user_jwt_tokens", "users"
 end

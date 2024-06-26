@@ -1,5 +1,7 @@
 class JobPosition < ApplicationRecord
   has_many :employees
+  has_many :position_histories
+
 
   validates :title, presence: true, uniqueness: true
   validates :description, presence: true

@@ -18,4 +18,6 @@ class Root < Grape::API
   mount V1::Hrms::LeaveRequests
   mount V1::Hrms::AllowanceAndDeductions
   mount V1::Hrms::Hikes
+  mount V1::Hrms::PayrollHistories
+  mount V1::Hrms::PositionHistories
 end

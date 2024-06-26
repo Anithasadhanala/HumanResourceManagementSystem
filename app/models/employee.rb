@@ -11,6 +11,15 @@ class Employee < ApplicationRecord
 
   scope :active, -> { where(is_active: true) }
 
+  def update_employee_job_position(params)
+    employee = Employee.find(params[:employee_id])
+    if !employee.job_position_id == params[:to_role_id]
+    employee.update!(job_position_id: params[:to_role_id])
+    employee
+    else
+
+    end
+  end
 
   def get_job_history(employee_id,job_history_id)
     employee = Employee.find(employee_id)

@@ -8,9 +8,9 @@ module V1::Exceptions
 
     included do
 
-      rescue_from ActiveRecord::RecordInvalid do |e|
-        error!({ error: { status: 422, message: e.message } }, 422)
-      end
+      # rescue_from ActiveRecord::RecordInvalid do |e|
+      #   error!({ error: { status: 422, message: e.message } }, 422)
+      # end
 
       rescue_from ActiveRecord::RecordNotFound do |e|
         error!({ error: { status: 404, message: e.message } }, 404)

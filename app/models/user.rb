@@ -11,6 +11,8 @@ class User < ApplicationRecord
   has_many :employee_supervisors
   has_many :allowance_and_deductions
   has_one :hike
+  has_many :position_histories
+
 
   accepts_nested_attributes_for :addresses, allow_destroy: true
   accepts_nested_attributes_for :bank_credentials, allow_destroy: true
