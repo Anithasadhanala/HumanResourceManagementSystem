@@ -16,15 +16,18 @@ module AuthenticationHelper
     begin
       payload, _header = JWT.decode(token, nil, false)
       if payload['expiry'] && Time.at(payload['expiry']) < Time.now
+        puts("***************************************************************8")
         return error!('Token has expired', 401)
       end
 
       # Check if the token is blacklisted
       if UserJwtToken.exists?(jwt_token: token, is_active: false)
+        puts("///////////////////////////////////////////////////////////////////////////////////////")
         error!('Token is deleted', 401)
       else
         data = JWT.decode(token, "SECRET", true, { algorithm: 'HS256' })
         Current.user = User.find(data[0]['user_id'])
+        puts(Current.user.role,"==========================================")
         @current_jwt_token = token
       end
     end

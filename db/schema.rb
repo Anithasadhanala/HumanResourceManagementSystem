@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_26_042114) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_26_064604) do
   create_table "addresses", force: :cascade do |t|
     t.string "d_no", null: false
     t.string "landmark", null: false
@@ -26,6 +26,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_042114) do
     t.index ["employee_id"], name: "index_addresses_on_employee_id"
   end
 
+  create_table "allowance_and_deductions", force: :cascade do |t|
+    t.boolean "is_active", default: true
+    t.integer "employee_id"
+    t.string "compensation_type", null: false
+    t.boolean "is_deduction", null: false
+    t.integer "amount", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_id"], name: "index_allowance_and_deductions_on_employee_id"
+  end
+
   create_table "bank_credentials", force: :cascade do |t|
     t.integer "employee_id", null: false
     t.string "bank_name", null: false
@@ -38,6 +49,15 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_042114) do
     t.datetime "updated_at", null: false
     t.boolean "is_active", default: true
     t.index ["employee_id"], name: "index_bank_credentials_on_employee_id"
+  end
+
+  create_table "deductions", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "description", null: false
+    t.integer "amount", null: false
+    t.boolean "is_active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "departments", force: :cascade do |t|
@@ -163,6 +183,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_26_042114) do
   end
 
   add_foreign_key "addresses", "users", column: "employee_id"
+  add_foreign_key "allowance_and_deductions", "users", column: "employee_id"
   add_foreign_key "bank_credentials", "users", column: "employee_id"
   add_foreign_key "employee_supervisors", "users", column: "employee_id"
   add_foreign_key "employee_supervisors", "users", column: "supervisor_id"

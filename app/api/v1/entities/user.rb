@@ -5,6 +5,8 @@ class V1::Entities::User < Grape::Entity
   expose :role
 
 
+
+
 end
 
 

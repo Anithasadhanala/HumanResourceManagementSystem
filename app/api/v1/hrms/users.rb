@@ -51,6 +51,12 @@ class V1::Hrms::Users < Grape::API
         requires :account_type, type: String
         optional :is_active, type: Boolean, default: true
       end
+
+      requires :payroll_attributes, type: Hash do
+        requires :base_payroll, type: Integer
+      end
+
+
     end
 
     post :signup do

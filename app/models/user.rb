@@ -9,11 +9,13 @@ class User < ApplicationRecord
   has_many :user_jwt_tokens
   has_many :leave_requests
   has_many :employee_supervisors
+  has_many :allowance_and_deductions
 
   accepts_nested_attributes_for :addresses, allow_destroy: true
   accepts_nested_attributes_for :bank_credentials, allow_destroy: true
   accepts_nested_attributes_for :employee_supervisors, allow_destroy: true
   accepts_nested_attributes_for :employee, allow_destroy: true
+  accepts_nested_attributes_for :payroll, allow_destroy: true
 
   after_create :create_associated_records
 
@@ -21,27 +23,31 @@ class User < ApplicationRecord
   attr_accessor :bank_credentials_attributes
   attr_accessor :employee_supervisors_attributes
   attr_accessor :employee_attributes
+  attr_accessor :payroll_attributes
 
 
   validates :email, presence: true, uniqueness: true
   validates :password_digest, presence: true
   validates :role, presence: true
 
+  scope :active, -> { where(is_active: true) }
+
+
+
 
   def create_associated_records
     transaction do
-      puts(addresses_attributes,"===================")
       create_associated_addresses if addresses_attributes.present?
       create_associated_bank_credentials if bank_credentials_attributes.present?
       create_associated_employee_supervisors if employee_supervisors_attributes.present?
       create_associated_employee if employee_attributes.present?
+      create_associated_payroll if payroll_attributes.present?
     rescue ActiveRecord::RecordInvalid => e
       raise ActiveRecord::Rollback, "Failed to create associated records: #{e.message}"
     end
   end
 
   def create_associated_addresses
-    puts(addresses_attributes,"/////////////////////////////////////////")
     Address.create!(
         d_no: addresses_attributes[:d_no],
         landmark: addresses_attributes[:landmark],
@@ -55,7 +61,6 @@ class User < ApplicationRecord
 
 
   def create_associated_bank_credentials
-    puts("++++++++++++++++++++++++++++")
     BankCredential.create!(
         bank_name: bank_credentials_attributes[:bank_name],
        bank_branch: bank_credentials_attributes[:bank_branch],
@@ -69,6 +74,11 @@ class User < ApplicationRecord
 
   def create_associated_employee_supervisors
       EmployeeSupervisor.create!(supervisor_id: employee_supervisors_attributes[:supervisor_id], employee_id: id)
+  end
+
+  def create_associated_payroll
+    puts(payroll_attributes,"/////////////////////////////////////////////////////")
+    Payroll.create!(base_payroll: payroll_attributes[:base_payroll], employee_id: id)
   end
 
 
@@ -100,7 +110,8 @@ class User < ApplicationRecord
         addresses_attributes: params[:addresses_attributes],
         employee_supervisors_attributes: params[:employee_supervisors_attributes],
         bank_credentials_attributes: params[:bank_credentials_attributes],
-        employee_attributes: params[:employee_attributes])
+        employee_attributes: params[:employee_attributes],
+        payroll_attributes: params[:payroll_attributes])
     end
 
 
@@ -129,5 +140,26 @@ class User < ApplicationRecord
       end
     end
   end
+
+  def get_allowance_and_deduction(user_id, compensation_id)
+    puts(user_id,"++++++++++++++++++++++++++++++++")
+    user = User.find(user_id)
+    if user
+      puts(")))))))))))))))))))))))")
+      allowance_deduction = AllowanceAndDeduction.find_by(id: compensation_id, is_active: true, employee_id: user.id)
+      if allowance_deduction
+        allowance_deduction
+      else
+        raise ActiveRecord::RecordNotFound
+      end
+    end
+  end
+
+  def get_all_allowance_and_deductions(user_id)
+    user = User.find(user_id)
+   AllowanceAndDeduction.where( is_Active:true, employee_id: user.id)
+  end
+
+
 end
 

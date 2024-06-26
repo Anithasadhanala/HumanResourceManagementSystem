@@ -20,7 +20,7 @@ class UserJwtToken < ApplicationRecord
 
   # generate jwt and stores
   def generate_jwt_token_and_store(user_id,role)
-    payload = { user_id: user_id, expiry: Time.now.to_i + 360000 ,user_role: role}
+    payload = { user_id: user_id, expiry: Time.now.to_i + 360000 ,role: role}
     jwt = JWT.encode(payload, "SECRET")
     user_jwt_token = UserJwtToken.new(user_id: user_id, jwt_token: jwt, is_active: true)
     if user_jwt_token.save!
