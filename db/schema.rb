@@ -1,16 +1,5 @@
-# This file is auto-generated from the current state of the database. Instead
-# of editing this file, please use the migrations feature of Active Record to
-# incrementally modify your database, and then regenerate this schema definition.
-#
-# This file is the source Rails uses to define your schema when running `bin/rails
-# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
-# be faster and is potentially less error prone than running all of your
-# migrations from scratch. Old migrations may fail to apply correctly if those
-# migrations use external dependencies or application code.
-#
-# It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_27_105243) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_27_171057) do
   create_table "addresses", force: :cascade do |t|
     t.string "d_no", null: false
     t.string "landmark", null: false
@@ -66,6 +55,18 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_105243) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_active", default: true, null: false
+  end
+
+  create_table "employee_documents", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "type", null: false
+    t.string "document_link", null: false
+    t.string "document_number", null: false
+    t.date "issued_at", null: false
+    t.string "expires_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_employee_documents_on_user_id"
   end
 
   create_table "employee_supervisors", force: :cascade do |t|
@@ -157,6 +158,32 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_105243) do
     t.boolean "is_active", default: true, null: false
   end
 
+  create_table "onboarding_candidates", force: :cascade do |t|
+    t.integer "opening_id", null: false
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "phone", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["opening_id"], name: "index_onboarding_candidates_on_opening_id"
+  end
+
+  create_table "openings", force: :cascade do |t|
+    t.integer "job_position_id", null: false
+    t.string "required_qualifications", null: false
+    t.integer "max_salary", null: false
+    t.integer "min_salary", null: false
+    t.integer "openings_count", null: false
+    t.integer "occupancy_count", default: 0, null: false
+    t.integer "created_by_id", null: false
+    t.string "employment_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "is_active", default: true
+    t.index ["created_by_id"], name: "index_openings_on_created_by_id"
+    t.index ["job_position_id"], name: "index_openings_on_job_position_id"
+  end
+
   create_table "payroll_histories", force: :cascade do |t|
     t.integer "payroll_id"
     t.integer "payroll_predicted", null: false
@@ -209,6 +236,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_105243) do
   add_foreign_key "addresses", "users", column: "employee_id"
   add_foreign_key "allowance_and_deductions", "users", column: "employee_id"
   add_foreign_key "bank_credentials", "users", column: "employee_id"
+  add_foreign_key "employee_documents", "users"
   add_foreign_key "employee_supervisors", "users", column: "employee_id"
   add_foreign_key "employee_supervisors", "users", column: "secondary_supervisor_id"
   add_foreign_key "employee_supervisors", "users", column: "supervisor_id"
@@ -221,6 +249,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_105243) do
   add_foreign_key "job_histories", "job_positions", column: "to_role_id"
   add_foreign_key "leave_requests", "leaves", column: "leave_id"
   add_foreign_key "leave_requests", "users", column: "requestee_id"
+  add_foreign_key "onboarding_candidates", "openings"
+  add_foreign_key "openings", "job_positions"
+  add_foreign_key "openings", "users", column: "created_by_id"
   add_foreign_key "payroll_histories", "bank_credentials"
   add_foreign_key "payroll_histories", "payrolls"
   add_foreign_key "payrolls", "users", column: "employee_id"

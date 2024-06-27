@@ -14,6 +14,8 @@ class User < ApplicationRecord
   has_one :hike
   has_many :position_histories
   has_one :payroll
+  has_many :employee_documents
+
 
 
   accepts_nested_attributes_for :addresses, allow_destroy: true
@@ -21,6 +23,7 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :employee_supervisors, allow_destroy: true
   accepts_nested_attributes_for :employee, allow_destroy: true
   accepts_nested_attributes_for :payroll, allow_destroy: true
+  accepts_nested_attributes_for :employee_documents, allow_destroy: true
 
   after_create :create_associated_records
 
@@ -29,6 +32,7 @@ class User < ApplicationRecord
   attr_accessor :employee_supervisors_attributes
   attr_accessor :employee_attributes
   attr_accessor :payroll_attributes
+  attr_accessor :employee_documents_attributes
 
   validates :email, presence: true, uniqueness: true
   validates :password_digest, presence: true
@@ -45,6 +49,7 @@ class User < ApplicationRecord
       create_associated_employee_supervisors if employee_supervisors_attributes.present?
       create_associated_employee if employee_attributes.present?
       create_associated_payroll if payroll_attributes.present?
+      create_associated_employee_documents if employee_documents_attributes.present?
     rescue ActiveRecord::RecordInvalid => e
       raise ActiveRecord::Rollback, "Failed to create associated records: #{e.message}"
     end
@@ -84,6 +89,21 @@ class User < ApplicationRecord
   def create_associated_payroll
       Payroll.create!(base_payroll: payroll_attributes[:base_payroll], employee_id: id)
   end
+
+
+  def create_associated_employee_documents
+    employee_documents = []
+    employee_documents_attributes.each do |employee_document|
+      employee_document = EmployeeDocument.new(employee_document)
+      if employee_document.save
+        employee_documents << employee_document
+      else
+        raise ActiveRecord::RecordInvalid
+      end
+    end
+    employee_documents
+  end
+
 
 
   def create_associated_employee

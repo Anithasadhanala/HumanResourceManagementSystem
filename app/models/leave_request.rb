@@ -4,7 +4,6 @@ class LeaveRequest < ApplicationRecord
 
   validates :requestee_id, :leave_id, :start_date, :end_date, :working_days_covered, presence: true
 
-
   enum status: {
     pending: 'pending',
     rejected: 'rejected',

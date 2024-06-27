@@ -23,4 +23,7 @@ class Root < Grape::API
   mount V1::Hrms::PositionHistories
   mount V1::Hrms::Payrolls
   mount V1::Hrms::Employees
+  mount V1::Hrms::Openings
+  mount V1::Hrms::OnboardingCandidates
+  mount V1::Hrms::EmployeeDocuments
 end

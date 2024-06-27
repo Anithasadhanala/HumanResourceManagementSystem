@@ -1,0 +1,76 @@
+class V1::Hrms::Openings < Grape::API
+  before { authenticate_user! }
+  resources :job_positions do
+    route_param :job_position_id do
+
+      before do
+        @job_position = JobPosition.find_by(id: params[:job_position_id], is_active:true)
+        error!({ error: "JobPosition not found" }, 404) unless @job_position
+      end
+
+
+    resources :openings do
+
+    # Endpoint, gives all openings----------------------------------------------------------------------------------------
+    desc 'Return all openings'
+    params do
+      optional :page, type: Integer, default: DEFAULT_PAGE, desc: 'Page number for pagination'
+      optional :per_page, type: Integer, default: DEFAULT_PER_PAGE, desc: 'Number of products per page'
+    end
+
+    get do
+
+      openings = JobPosition.new.get_all_active_openings_of_jobPosition(@job_position)
+      openings = paginate(openings)
+      present(openings , with: V1::Entities::Opening, type: :full)
+    end
+
+    # Endpoint to get a specific Opening by ID-------------------------------------------------------------------------------
+    desc 'Return a specific Opening'
+
+    params do
+      requires :id, type: Integer
+    end
+
+    get ':id' do
+      opening = JobPosition.new.find_opening_by_id(@job_position,params[:id])
+      if opening
+        present opening, with: V1::Entities::Opening
+      end
+    end
+
+    # Endpoint to create a new Opening---------------------------------------------------------------------------------------
+    desc 'Create a new Opening'
+    before { authenticate_admin! }
+    params do
+      requires :required_qualifications, type: String
+      requires :max_salary, type: Integer
+      requires :min_salary, type: Integer
+      requires :employment_type, type: String
+    end
+
+    post do
+      opening = Opening.new.create_opening(params)
+      present opening, with: V1::Entities::Opening, type: :full
+    end
+
+
+    # Endpoint for updating a specific Opening---------------------------------------------------------------------------------
+    desc 'Update a Opening'
+
+    params do
+      optional :required_qualifications, type: String
+      optional :max_salary, type: Integer
+      optional :min_salary, type: Integer
+      optional :openings_count, type: Integer
+      optional :employment_type, type: String
+    end
+
+    put ':id' do
+      opening = Opening.new.find_and_update_opening(params)
+      present opening, with: V1::Entities::Opening
+    end
+  end
+    end
+  end
+end
