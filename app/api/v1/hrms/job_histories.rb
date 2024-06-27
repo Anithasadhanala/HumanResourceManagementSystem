@@ -3,7 +3,7 @@ class V1::Hrms::JobHistories < Grape::API
 
   resources :employees do
     route_param :employee_id do
-    resources :jobhistories do
+    resources :job_histories do
 
       # Endpoint, gives all job histories----------------------------------------------------------------------------------------
       desc 'Return all job histories'

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_27_044312) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_27_105243) do
   create_table "addresses", force: :cascade do |t|
     t.string "d_no", null: false
     t.string "landmark", null: false
@@ -203,6 +203,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_044312) do
     t.string "role", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_active", default: true, null: false
   end
 
   add_foreign_key "addresses", "users", column: "employee_id"

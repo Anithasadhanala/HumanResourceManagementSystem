@@ -20,7 +20,7 @@ class V1::Hrms::Payrolls < BaseApi
 
     # Endpoint for updating a specific Payroll---------------------------------------------------------------------------------
     desc 'Update a Payroll'
-
+    before { authenticate_admin! }
     params do
       optional :base_payroll, type: String
     end

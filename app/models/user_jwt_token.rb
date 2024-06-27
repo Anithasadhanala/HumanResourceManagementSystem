@@ -6,15 +6,20 @@ class UserJwtToken < ApplicationRecord
   # validates the all active records and send the ost recent jwt_token which is active
   def get_valid_token(user_id)
 
-    existing_tokens = UserJwtToken.where(user_id: user_id).order(created_at: :desc)
-    valid_token = existing_tokens.detect do |token|
-      begin
-        decoded_token = JWT.decode(token.jwt_token, "SECRET", true, algorithm: 'HS256')
-        token_expiry = decoded_token[0]['expiry']
-        Time.now.to_i < token_expiry && token.is_active == true
+    valid_user = User.find_by(id: user_id, is_active: true)
+    if valid_user.nil?
+      existing_tokens = UserJwtToken.where(user_id: user_id).order(created_at: :desc)
+      valid_token = existing_tokens.detect do |token|
+        begin
+          decoded_token = JWT.decode(token.jwt_token, "SECRET", true, algorithm: 'HS256')
+          token_expiry = decoded_token[0]['expiry']
+          Time.now.to_i < token_expiry && token.is_active == true
+        end
       end
+      valid_token
+    else
+      raise RuntimeError, {message: "this employee id delete"}
     end
-    valid_token
   end
 
 

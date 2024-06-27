@@ -17,7 +17,7 @@ module AuthenticationHelper
     begin
       payload, _header = JWT.decode(token, nil, false)
       if payload['expiry'] && Time.at(payload['expiry']) < Time.now
-        puts("***************************************************************8")
+        puts("***************************************************************")
         return error!('Token has expired', 401)
       end
 

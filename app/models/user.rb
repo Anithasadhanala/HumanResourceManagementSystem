@@ -35,7 +35,7 @@ class User < ApplicationRecord
   validates :role, presence: true
 
   scope :active, -> { where(is_active: true) }
-
+  scope :approved, -> { where(status: 'approved') }
 
 
   def create_associated_records
@@ -157,26 +157,24 @@ class User < ApplicationRecord
 
 
   def get_hike(user_id, hike_id)
-    user = User.find(user_id)
-    if user
+     authorise_user(user_id)
       allowance_deduction = Hike.find_by(id: hike_id, is_active: true, employee_id: user.id)
       if allowance_deduction
         allowance_deduction
       else
         raise ActiveRecord::RecordNotFound
       end
-    end
   end
 
 
 
   def get_all_position_histories(user_id)
-    User.find(user_id)
+    authorise_user(user_id)
     PositionHistory.where(employee_id: user_id)
   end
 
   def get_position_history(user_id, id)
-    User.find(user_id)
+    authorise_user(user_id)
     position_history = PositionHistory.find_by(employee_id: user_id, id: id)
     if position_history
       position_history
@@ -185,16 +183,61 @@ class User < ApplicationRecord
     end
   end
 
+  # def get_leave_details(employee_id)
+  #   authorise_user(employee_id)
+  #
+  #
+  #
+  # end
 
-  def get_all_payroll_histories(employee_id)
-    User.find(employee_id)
-    payrolls = Payroll.where(employee_id: employee_id).pluck(:id)
-    PayrollHistory.where(payroll_id: payrolls)
+
+
+  def get_leave_details(employee_id)
+    authorise_user(employee_id)
+    leave_requests = LeaveRequest.where(requestee_id: employee_id).approved
+
+    leave_details = leave_requests.group_by(&:leave).map do |leave, requests|
+      days_taken = requests.sum(&:working_days_covered)
+      {
+        leave_title: leave.title,
+        days_taken: days_taken,
+        days_remaining: leave.days_count - days_taken
+      }
+    end
+    {
+
+      total_days_taken: leave_details.sum { |details| details[:days_taken] },
+      leave_details: leave_details
+    }
   end
 
+
+
+
+  def get_all_payroll_histories(employee_id)
+    authorise_user(employee_id)
+    payrolls = Payroll.where(employee_id: employee_id).pluck(:id)
+    payrolls = PayrollHistory.where(payroll_id: payrolls)
+    if payrolls
+      payrolls
+    else
+      raise ActiveRecord::RecordNotFound end
+    end
+
+
   def get_payroll_history(user_id, id)
-    User.find(user_id)
+    authorise_user(user_id)
     PayrollHistory.find(id)
+  end
+
+
+  def delete_employee(employee_id)
+    user = User.find(employee_id)
+    if user
+      user.update(is_active: false)
+      UserJwtToken.where(user_id: employee_id).update_all(is_active: false)
+      {message: "Employee with id: #{employee_id}  is deleted!!!"}
+    end
   end
 
 

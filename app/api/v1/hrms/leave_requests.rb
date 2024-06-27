@@ -60,6 +60,25 @@ class V1::Hrms::LeaveRequests < Grape::API
           present leave_request
         end
       end
+
+
+      resources :leaves do
+
+        # Endpoint to get for a specific employee, leave - counts  by ID-------------------------------------------------------------------------------
+        desc 'Return a specific leave_requests'
+
+        get do
+          leave_request = User.new.get_leave_details(params[:employee_id])
+          if leave_request
+            # present leave_request, with: V1::Entities::LeaveRequest
+             leave_request
+          end
+        end
+
+      end
+
+
+
     end
   end
   end

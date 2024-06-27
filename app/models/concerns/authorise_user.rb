@@ -8,7 +8,6 @@ module AuthoriseUser
     end
   end
 
-
   def authorise_employee(employee_id)
     if  !Current.user.id == employee_id
       raise RuntimeError, {message: "Not Authorised to access this content!!!"}

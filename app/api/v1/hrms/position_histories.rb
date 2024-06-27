@@ -24,22 +24,9 @@ class V1::Hrms::PositionHistories < Grape::API
           present position_history, with: V1::Entities::PositionHistory
         end
 
-        # Endpoint to create a new allowance and deduction for a specific employee----------------------------------------------------------------------------
-        desc 'Create a new allowance and deduction for a specific employee'
-        before { authenticate_admin! }
-        params do
-          requires :to_role_id, type: Integer
-          requires :switch_reason, type: String
-          requires :switch_type, type: String
-        end
-
-        post do
-          position_history = PositionHistory.new.create_position_history(params)
-          present position_history, with: V1::Entities::PositionHistory,  type: :full
-        end
-
         # Endpoint to update a specific position_history for a specific employee------------------------------------------------------------------------
         desc 'Update a specific position_history for a specific employee'
+        before {authenticate_user! }
         params do
           optional :to_role_id, type: Integer
           optional :switch_reason, type: String

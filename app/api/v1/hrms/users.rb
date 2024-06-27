@@ -86,7 +86,6 @@ class V1::Hrms::Users < Grape::API
       end
     end
 
-
     #Logout Endpoint of a user -------------------------------------------------------------------------------------------------------------------
     desc  'Logout user'
     before { authenticate_user! }

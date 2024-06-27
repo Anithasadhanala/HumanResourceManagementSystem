@@ -40,8 +40,16 @@ class V1::Hrms::Employees < BaseApi
 
     put ':id' do
       employee = Employee.new.find_and_update_employee(params)
-      puts(employee.inspect)
       present employee, with: V1::Entities::Employee
+    end
+
+
+
+    # Delete a specific user-------------------------------------------------------------------------
+    before { authenticate_admin! }
+    delete ':id' do
+      delete = User.new.delete_employee(params[:id])
+      delete
     end
   end
 end
