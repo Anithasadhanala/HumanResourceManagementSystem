@@ -1,4 +1,5 @@
 class PositionHistory < ApplicationRecord
+
   belongs_to :user, class_name: 'User', foreign_key: 'employee_id'
 
 
@@ -10,5 +11,4 @@ class PositionHistory < ApplicationRecord
     position_history.update!(params)
     position_history
   end
-
 end

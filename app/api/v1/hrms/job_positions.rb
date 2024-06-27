@@ -3,6 +3,12 @@ class V1::Hrms::JobPositions < Grape::API
 
   resources :job_positions do
 
+    def job_position_permitted_attributes(params)
+      ActionController::Parameters.new(params).permit(
+        :title,
+        :description)
+    end
+
     # Endpoint, gives all job positions----------------------------------------------------------------------------------------
     desc 'Return all job positions'
     params do
@@ -19,7 +25,6 @@ class V1::Hrms::JobPositions < Grape::API
 
     # Endpoint to get a specific job position by ID-------------------------------------------------------------------------------
     desc 'Return a specific job positions'
-
     params do
       requires :id, type: Integer
     end
@@ -31,6 +36,7 @@ class V1::Hrms::JobPositions < Grape::API
       end
     end
 
+
     # Endpoint to create a new job position---------------------------------------------------------------------------------------
     desc 'Create a new job position'
     before { authenticate_admin! }
@@ -40,28 +46,29 @@ class V1::Hrms::JobPositions < Grape::API
     end
 
     post do
-      job_position = JobPosition.new.create_job_position(params)
+      permitted_params = job_position_permitted_attributes(params)
+      job_position = JobPosition.new.create_job_position(permitted_params)
       present job_position, with: V1::Entities::JobPosition, type: :full
     end
 
 
     # Endpoint for updating a specific  job position---------------------------------------------------------------------------------
     desc 'Update a  job position'
-
     params do
       optional :title, type: String
       optional :description, type: String
     end
 
     put ':id' do
-      job_position = JobPosition.new.find_and_update_job_position(params)
+      permitted_params = job_position_permitted_attributes(params)
+      permitted_params = permitted_params.merge(id: params[:id])
+      job_position = JobPosition.new.find_and_update_job_position(permitted_params)
       present job_position, with: V1::Entities::JobPosition
     end
 
 
     # Endpoint that deletes a specific job_position ----------------------------------------------------------------------------------
     desc 'Delete a job position'
-
     params do
       requires :id, type: Integer
     end
@@ -70,6 +77,7 @@ class V1::Hrms::JobPositions < Grape::API
       job_position= JobPosition.new.find_and_destroy_if_no_employees(params[:id])
       job_position
     end
+
 
   end
 end

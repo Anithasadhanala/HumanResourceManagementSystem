@@ -3,6 +3,14 @@ class V1::Hrms::Departments < BaseApi
 
   resources :departments do
 
+    # accepts params and returns, restricted params
+    def department_permitted_attributes(params)
+      ActionController::Parameters.new(params).permit(
+        name,
+        description)
+    end
+
+
     # Endpoint, gives all departments----------------------------------------------------------------------------------------
     desc 'Return all departments'
     params do
@@ -19,17 +27,15 @@ class V1::Hrms::Departments < BaseApi
 
     # Endpoint to get a specific department by ID-------------------------------------------------------------------------------
     desc 'Return a specific department'
-
     params do
       requires :id, type: Integer
     end
 
     get ':id' do
       department = Department.new.find_by_id(params[:id])
-      if department
-        present department, with: V1::Entities::Department
-      end
+      present department, with: V1::Entities::Department
     end
+
 
     # Endpoint to create a new department---------------------------------------------------------------------------------------
     desc 'Create a new department'
@@ -40,7 +46,8 @@ class V1::Hrms::Departments < BaseApi
     end
 
     post do
-      department = Department.new.create_department(params)
+      permitted_params = department_permitted_attributes(params)
+      department = Department.new.create_department(permitted_params)
       present department, with: V1::Entities::Department, type: :full
     end
 
@@ -54,15 +61,15 @@ class V1::Hrms::Departments < BaseApi
     end
 
     put ':id' do
-      department = Department.new.find_and_update_department(params)
+      permitted_params = department_permitted_attributes(params)
+      permitted_params = permitted_params.merge(id: params[:id])
+      department = Department.new.find_and_update_department(permitted_params)
       present department, with: V1::Entities::Department
     end
 
 
-
     # Endpoint that deletes a specific department ----------------------------------------------------------------------------------
     desc 'Delete a department'
-
     params do
       requires :id, type: Integer
     end

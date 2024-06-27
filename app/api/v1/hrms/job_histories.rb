@@ -3,11 +3,28 @@ class V1::Hrms::JobHistories < Grape::API
 
   resources :employees do
     route_param :employee_id do
-    resources :job_histories do
+
+      # validating provided employee exists
+      before do
+        @employee = User.find_by(id: params[:employee_id])
+        error!({ error: "Employee not found" }, 404) unless @employee
+      end
+
+      def job_history_permitted_attributes(params)
+        permitted_params = ActionController::Parameters.new(params).permit(
+           :from_role_id,
+         :to_role_id,
+         :switched_at,
+         :switch_reason,
+         :switch_type)
+        permitted_params.merge(employee_id: params[:employee_id])
+        permitted_params
+      end
+
+      resources :job_histories do
 
       # Endpoint, gives all job histories----------------------------------------------------------------------------------------
       desc 'Return all job histories'
-
       params do
         optional :page, type: Integer, default: DEFAULT_PAGE, desc: 'Page number for pagination'
         optional :per_page, type: Integer, default: DEFAULT_PER_PAGE, desc: 'Number of products per page'
@@ -18,9 +35,9 @@ class V1::Hrms::JobHistories < Grape::API
         present(job_histories , with: V1::Entities::JobHistory, type: :full)
       end
 
+
       # Endpoint to get a specific job_histories by ID-------------------------------------------------------------------------------
       desc 'Return a specific job_histories'
-
       params do
         requires :id, type: Integer
       end
@@ -31,7 +48,6 @@ class V1::Hrms::JobHistories < Grape::API
           present job_history, with: V1::Entities::JobHistory
         end
       end
-
 
 
       # Endpoint for updating a specific job_history---------------------------------------------------------------------------------
@@ -46,9 +62,13 @@ class V1::Hrms::JobHistories < Grape::API
       end
 
       put ':id' do
-        job_history = JobHistory.new.find_and_update_job_history(params)
+        permitted_params = job_history_permitted_attributes(params)
+        permitted_params =  permitted_params.merge(id: params[:id])
+        job_history = JobHistory.new.find_and_update_job_history(permitted_params)
         present job_history, with: V1::Entities::JobHistory
       end
+
+
     end
     end
   end

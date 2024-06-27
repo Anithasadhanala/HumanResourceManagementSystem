@@ -1,32 +1,15 @@
 # app/models/employee.rb
 class Employee < ApplicationRecord
+  include AuthoriseUser
+
   belongs_to :user
   belongs_to :job_position
   belongs_to :department
   has_many :addresses
   has_many :job_histories
 
-  include AuthoriseUser
-  #
-  # enum employment_type: {
-  #   freelancer: 0,
-  #   intern: 1,
-  #   full_time: 2,
-  #   part_time: 3,
-  #   contractor: 4
-  # }
-  #
-  # enum employee_type: {
-  #   team_lead: 1,
-  #   manager: 2,
-  #   team_member: 3,
-  #   coe: 4
-  # }
-
-
   validates :user_name,:first_name,:last_name, :phone, :hired_at, :personal_email, :emergency_contact_phone, :emergency_contact_name,
             :gender, :department_id,:job_position_id,:experience_in_months, :qualifications, :employee_type, :employment_type, presence: true
-
   scope :active, -> { where(is_active: true) }
 
 
@@ -37,7 +20,6 @@ class Employee < ApplicationRecord
 
 
   def find_and_update_employee(params)
-
     employee = Employee.find(params[:id])
     employee_instance = find_by_id(employee.id)
     employee_instance.update(params.except(:job_position_id))
@@ -55,6 +37,7 @@ class Employee < ApplicationRecord
     end
   end
 
+
   def get_job_history(employee_id,job_history_id)
     authorise_user(employee_id)
     employee = Employee.find(employee_id)
@@ -62,6 +45,7 @@ class Employee < ApplicationRecord
       employee.job_histories.find( job_history_id)
     end
   end
+
 
   def get_all_job_histories(employee_id)
     authorise_user(employee_id)
@@ -91,12 +75,4 @@ class Employee < ApplicationRecord
         raise ActiveRecord::RecordNotFound
       end
   end
-
-
-
-
-
-
-
-
 end

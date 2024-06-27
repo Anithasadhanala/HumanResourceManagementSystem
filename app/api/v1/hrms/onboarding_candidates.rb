@@ -1,14 +1,13 @@
 class V1::Hrms::OnboardingCandidates < Grape::API
   before { authenticate_user! }
 
-      resources :openings do
-        route_param :opening_id do
+  resources :openings do
+    route_param :opening_id do
 
-          before do
-            @opening = Opening.find_by(id: params[:opening_id])
-            error!({ error: "Opening not found" }, 404) unless @opening
-          end
-
+      before do
+        @opening = Opening.find_by(id: params[:opening_id])
+        error!({ error: "Opening not found" }, 404) unless @opening
+      end
 
 
       resources :onboarding_candidates do
@@ -23,13 +22,11 @@ class V1::Hrms::OnboardingCandidates < Grape::API
         get do
           onboarding_candidate = Opening.new.get_all_onboarding_candidates_for_opening(@opening)
           onboarding_candidate = paginate(onboarding_candidate)
-          puts(onboarding_candidate.inspect,"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
           present( onboarding_candidate, with: V1::Entities::OnboardingCandidate, type: :full)
         end
 
         # Endpoint to get a specific onboarding_candidate by ID-------------------------------------------------------------------------------
         desc 'Return a specific onboarding_candidate'
-
         params do
           requires :id, type: Integer
         end
@@ -41,10 +38,10 @@ class V1::Hrms::OnboardingCandidates < Grape::API
           end
         end
 
+
         # Endpoint to create a new onboarding_candidate ---------------------------------------------------------------------------------------
         desc 'Create a new onboarding_candidate'
         before { authenticate_admin! }
-
         params do
           requires :onboarding_candidates, type: Array do
             requires :name, type: String
@@ -58,6 +55,8 @@ class V1::Hrms::OnboardingCandidates < Grape::API
           onboarding_candidate = OnboardingCandidate.new.create_onboarding_candidates(params[:onboarding_candidates])
           present onboarding_candidate, with: V1::Entities::OnboardingCandidate, type: :full
         end
+
+
       end
     end
   end

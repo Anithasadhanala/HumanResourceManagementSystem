@@ -3,6 +3,13 @@ class V1::Hrms::Leaves < Grape::API
 
   resources :leaves do
 
+
+    def leave_permitted_attributes(params)
+     ActionController::Parameters.new(params).permit(
+        :title,
+        :description)
+    end
+
     # Endpoint, gives all leaves----------------------------------------------------------------------------------------
     desc 'Return all leaves'
     params do
@@ -16,19 +23,18 @@ class V1::Hrms::Leaves < Grape::API
       present(leaves , with: V1::Entities::Leave, type: :full)
     end
 
+
     # Endpoint to get a specific Leave by ID-------------------------------------------------------------------------------
     desc 'Return a specific Leave'
-
     params do
       requires :id, type: Integer
     end
 
     get ':id' do
       leave = Leave.new.find_by_id(params[:id])
-      if leave
-        present leave, with: V1::Entities::Leave
-      end
+      present leave, with: V1::Entities::Leave
     end
+
 
     # Endpoint to create a new Leave---------------------------------------------------------------------------------------
     desc 'Create a new Leave'
@@ -39,28 +45,29 @@ class V1::Hrms::Leaves < Grape::API
     end
 
     post do
-      leave = Leave.new.create_leave(params)
+      permitted_params = leave_permitted_attributes(params)
+      leave = Leave.new.create_leave(permitted_params)
       present leave, with: V1::Entities::Leave
     end
 
 
     # Endpoint for updating a specific Leave---------------------------------------------------------------------------------
     desc 'Update a Leave'
-
     params do
       optional :name, type: String
       optional :description, type: String
     end
 
     put ':id' do
-      leave = Leave.new.find_and_update_leave(params)
+      permitted_params = leave_permitted_attributes(params)
+      permitted_params = permitted_params.merge(id: params[:id])
+      leave = Leave.new.find_and_update_leave(permitted_params)
       present leave, with: V1::Entities::Leave
     end
 
 
     # Endpoint that deletes a specific Leave ----------------------------------------------------------------------------------
     desc 'Delete a Leave'
-
     params do
       requires :id, type: Integer
     end
@@ -69,6 +76,7 @@ class V1::Hrms::Leaves < Grape::API
       leave= Leave.new.find_and_destroy(params[:id])
       leave
     end
+
 
   end
 end

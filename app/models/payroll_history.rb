@@ -1,7 +1,6 @@
 class PayrollHistory < ApplicationRecord
+
   belongs_to :payroll
-
-
 
 
   def payroll_calculation(employee_id)
@@ -17,7 +16,6 @@ class PayrollHistory < ApplicationRecord
   end
 
   def create_payroll_history(params)
-
     final_payroll = payroll_calculation(params[:employee_id])
     payroll_id = Payroll.where(employee_id: params[:employee_id]).pluck(:id).first
     User.find(params[:employee_id])
@@ -32,6 +30,4 @@ class PayrollHistory < ApplicationRecord
       raise RuntimeError, {message: "bank credential is Invalid Record!!!"}
     end
   end
-
-
 end

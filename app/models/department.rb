@@ -4,7 +4,6 @@ class Department < ApplicationRecord
 
   validates :name, presence: true, uniqueness: true
   validates :description, presence: true
-
   scope :active, -> { where(is_active: true) }
 
   def get_all_departments

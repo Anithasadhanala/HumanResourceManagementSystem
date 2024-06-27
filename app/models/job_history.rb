@@ -1,4 +1,5 @@
 class JobHistory < ApplicationRecord
+
   belongs_to :employee
   belongs_to :from_role, class_name: 'JobPosition', foreign_key: 'from_role_id'
   belongs_to :to_role, class_name: 'JobPosition', foreign_key: 'to_role_id'
@@ -16,5 +17,4 @@ class JobHistory < ApplicationRecord
       job_history
     end
   end
-
 end

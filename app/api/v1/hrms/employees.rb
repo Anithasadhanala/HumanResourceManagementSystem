@@ -3,20 +3,38 @@ class V1::Hrms::Employees < BaseApi
 
   resources :employees do
 
+    def employee_details_permitted_attributes(params)
+     ActionController::Parameters.new(params).permit(
+        :user_name,
+       :phone,
+       :hired_at,
+       :personal_email,
+       :emergency_contact_phone,
+       :emergency_contact_name,
+       :gender,
+       :experience_in_months,
+       :qualifications,
+       :employee_type,
+       :employment_type,
+       :department_id,
+       :first_name,
+       :last_name)
+    end
+
+
+
     # Endpoint to get a specific employee by ID-------------------------------------------------------------------------------
     desc 'Return a specific employee'
-
     params do
       requires :id, type: Integer
     end
 
     get ':id' do
       employee = Employee.new.find_by_id(params[:id])
-      if employee
-        present employee, with: V1::Entities::Employee
-      end
+      present employee, with: V1::Entities::Employee
     end
-    
+
+
     # Endpoint for updating a specific employee---------------------------------------------------------------------------------
     desc 'Update a employee'
 
@@ -37,12 +55,12 @@ class V1::Hrms::Employees < BaseApi
         optional :last_name, type: String
       end
 
-
     put ':id' do
-      employee = Employee.new.find_and_update_employee(params)
+      permitted_params = employee_details_permitted_attributes(params)
+      permitted_params = permitted_params.merge(id: params[:id])
+      employee = Employee.new.find_and_update_employee(permitted_params)
       present employee, with: V1::Entities::Employee
     end
-
 
 
     # Delete a specific user-------------------------------------------------------------------------
@@ -51,5 +69,7 @@ class V1::Hrms::Employees < BaseApi
       delete = User.new.delete_employee(params[:id])
       delete
     end
+
+
   end
 end

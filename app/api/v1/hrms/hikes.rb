@@ -3,6 +3,27 @@ class V1::Hrms::Hikes < Grape::API
 
   resources :employees do
     route_param :employee_id do
+
+      # validating provided employee exists
+      before do
+        @employee = User.find_by(id: params[:employee_id])
+        error!({ error: "Employee not found" }, 404) unless @employee
+      end
+
+      def hike_permitted_attributes(params)
+        permitted_params = ActionController::Parameters.new(params).permit(
+          :reason,
+          :percentage_value,
+          :account_number,
+          :ifsc_code,
+          :bank_branch_code,
+          :account_type,
+          :is_active)
+        permitted_params.merge(employee_id: params[:employee_id])
+        permitted_params
+      end
+
+
       resources :hikes do
 
         # Endpoint to get a specific hike by ID for a specific employee----------------------------------------------------------------------
@@ -16,44 +37,49 @@ class V1::Hrms::Hikes < Grape::API
           present hike, with: V1::Entities::Hike
         end
 
+
         # Endpoint to create a new allowance and deduction for a specific employee----------------------------------------------------------------------------
         desc 'Create a new allowance and deduction for a specific employee'
         before { authenticate_admin! }
         params do
           requires :reason, type: String
           requires :percentage_value, type: Integer
-          optional :is_active, type: Boolean, default: true
         end
 
         post do
-          hike = Hike.new.create_hike(params)
+          permitted_params = hike_permitted_attributes(params)
+          hike = Hike.new.create_hike(permitted_params)
           present hike, with: V1::Entities::Hike,  type: :full
         end
+
 
         # Endpoint to update a specific hike for a specific employee------------------------------------------------------------------------
         desc 'Update a specific hike for a specific employee'
         params do
           optional :reason, type: String
           optional :percentage_value, type: Integer
-          optional :is_active, type: Boolean, default: true
         end
 
         put ':id' do
-          hike = Hike.new.find_and_update_hike(params)
+          permitted_params = hike_permitted_attributes(params)
+          permitted_params = permitted_params.merge(id: params[:id])
+          hike = Hike.new.find_and_update_hike(permitted_params)
           present hike, with: V1::Entities::Hike
         end
 
+
         # Endpoint to delete a specific address for a specific employee----------------------------------------------------------------------------
         desc 'Delete a specific allowance and deduction for a specific employee'
-
         params do
           requires :id, type: Integer
         end
 
         delete ':id' do
-          hike = Hike.new.find_and_destroy_employee_hike(params)
+          hike = Hike.new.find_and_destroy_employee_hike(id, @employee.id)
           hike
         end
+
+
       end
     end
   end

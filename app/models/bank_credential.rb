@@ -1,7 +1,10 @@
 class BankCredential < ApplicationRecord
 
-  validates :account_type, presence: true
   belongs_to :user, class_name: 'User', foreign_key: 'employee_id'
+
+  validates :bank_name, :account_number, :ifsc_code, :bank_branch_code,:bank_name, :account_type,:employee_id,:is_active,presence: true
+  validates :account_type, presence: true
+  scope :active, -> { where(is_active: true) }
 
   enum account_type: {
     salary: 'salary',
@@ -13,9 +16,6 @@ class BankCredential < ApplicationRecord
     self.class.account_types.key?(type.to_sym)
   end
 
-  validates :bank_name, :account_number, :ifsc_code, :bank_branch_code,:bank_name, :account_type,:employee_id,:is_active,presence: true
-
-  scope :active, -> { where(is_active: true) }
 
   def create_bank_credential(params)
     authorise_user(employee_id)
@@ -50,5 +50,4 @@ class BankCredential < ApplicationRecord
       { error: "bank credential with id: #{bank_credential.id}  has not found!!!" }
     end
   end
-
 end

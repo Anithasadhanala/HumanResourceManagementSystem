@@ -1,4 +1,5 @@
 class LeaveRequest < ApplicationRecord
+
   belongs_to :leave
   belongs_to :requestee, class_name: 'User', foreign_key: 'requestee_id'
 
@@ -19,6 +20,7 @@ class LeaveRequest < ApplicationRecord
     params = params.merge(requestee_id: params[:employee_id])
     LeaveRequest.create!(params)
   end
+
 
   def count_prev_leaves_approved(requestee_id)
     approved_leave_requests = LeaveRequest.where(status: :approved, requestee_id: requestee_id)

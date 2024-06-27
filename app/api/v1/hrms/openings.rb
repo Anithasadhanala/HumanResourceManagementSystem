@@ -9,6 +9,16 @@ class V1::Hrms::Openings < Grape::API
       end
 
 
+      def opening_permitted_attributes(params)
+        permitted_params = ActionController::Parameters.new(params).permit(
+           :required_qualifications,
+         :max_salary,
+         :min_salary,
+         :employment_type,)
+        permitted_params.merge(job_position_id: params[:job_position_id])
+        permitted_params
+      end
+
     resources :openings do
 
     # Endpoint, gives all openings----------------------------------------------------------------------------------------
@@ -19,15 +29,14 @@ class V1::Hrms::Openings < Grape::API
     end
 
     get do
-
       openings = JobPosition.new.get_all_active_openings_of_jobPosition(@job_position)
       openings = paginate(openings)
       present(openings , with: V1::Entities::Opening, type: :full)
     end
 
+
     # Endpoint to get a specific Opening by ID-------------------------------------------------------------------------------
     desc 'Return a specific Opening'
-
     params do
       requires :id, type: Integer
     end
@@ -38,6 +47,7 @@ class V1::Hrms::Openings < Grape::API
         present opening, with: V1::Entities::Opening
       end
     end
+
 
     # Endpoint to create a new Opening---------------------------------------------------------------------------------------
     desc 'Create a new Opening'
@@ -50,14 +60,14 @@ class V1::Hrms::Openings < Grape::API
     end
 
     post do
-      opening = Opening.new.create_opening(params)
+      permitted_params = opening_permitted_attributes(params)
+      opening = Opening.new.create_opening(permitted_params)
       present opening, with: V1::Entities::Opening, type: :full
     end
 
 
     # Endpoint for updating a specific Opening---------------------------------------------------------------------------------
     desc 'Update a Opening'
-
     params do
       optional :required_qualifications, type: String
       optional :max_salary, type: Integer
@@ -67,10 +77,14 @@ class V1::Hrms::Openings < Grape::API
     end
 
     put ':id' do
-      opening = Opening.new.find_and_update_opening(params)
+      permitted_params = opening_permitted_attributes(params)
+      permitted_params = permitted_params.merge(id: params[:id])
+      opening = Opening.new.find_and_update_opening(permitted_params)
       present opening, with: V1::Entities::Opening
     end
-  end
+    end
+
+
     end
   end
 end

@@ -2,8 +2,8 @@ class V1::Hrms::Users < Grape::API
   format :json
 
   resource :users do
-    desc 'signup a new user'
 
+    desc 'signup a new user'
     params do
       requires :email, type: String
       requires :password, type: String
@@ -53,6 +53,14 @@ class V1::Hrms::Users < Grape::API
         optional :is_active, type: Boolean, default: true
       end
 
+      requires :employee_documents_attributes, type: Array do
+        requires :document_type, type: String
+        requires :document_link, type: String
+        requires :document_number, type: String
+        requires :issued_at, type: Date
+        requires :expires_at, type: String
+      end
+
       requires :payroll_attributes, type: Hash do
         requires :base_payroll, type: Integer
       end
@@ -89,6 +97,7 @@ class V1::Hrms::Users < Grape::API
     #Logout Endpoint of a user -------------------------------------------------------------------------------------------------------------------
     desc  'Logout user'
     before { authenticate_user! }
+
     delete :logout do
       if Current.user
         Current.user.user_jwt_tokens.update_all(is_active: false)
@@ -97,6 +106,5 @@ class V1::Hrms::Users < Grape::API
         { message: 'Not logged in' }
       end
     end
-
   end
 end

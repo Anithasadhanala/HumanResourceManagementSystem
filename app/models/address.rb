@@ -1,8 +1,8 @@
 class Address < ApplicationRecord
   include AuthoriseUser
   belongs_to :user, class_name: 'User', foreign_key: 'employee_id'
-  validates :d_no, :landmark, :city, :zip_code, :state, :country, presence: true
 
+  validates :d_no, :landmark, :city, :zip_code, :state, :country, presence: true
   scope :active, -> { where(is_active: true) }
 
 
@@ -26,6 +26,7 @@ class Address < ApplicationRecord
       end
   end
 
+
   def employee_has_active_address_type?(employee_id,address_type)
     Address.where(is_permanent: address_type, is_active: true,employee_id: employee_id).exists?
   end
@@ -40,6 +41,7 @@ class Address < ApplicationRecord
       Address.create!(params)
     end
   end
+
 
   def find_and_update_address(params)
     authorise_user(params[:employee_id])
@@ -61,5 +63,4 @@ class Address < ApplicationRecord
       { error: "address with id: #{address.id}  has not found!!!" }
     end
   end
-
 end

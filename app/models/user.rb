@@ -16,8 +16,6 @@ class User < ApplicationRecord
   has_one :payroll
   has_many :employee_documents
 
-
-
   accepts_nested_attributes_for :addresses, allow_destroy: true
   accepts_nested_attributes_for :bank_credentials, allow_destroy: true
   accepts_nested_attributes_for :employee_supervisors, allow_destroy: true
@@ -86,6 +84,7 @@ class User < ApplicationRecord
                                  secondary_supervisor_id: employee_supervisors_attributes[:secondary_supervisor_id])
   end
 
+
   def create_associated_payroll
       Payroll.create!(base_payroll: payroll_attributes[:base_payroll], employee_id: id)
   end
@@ -94,6 +93,7 @@ class User < ApplicationRecord
   def create_associated_employee_documents
     employee_documents = []
     employee_documents_attributes.each do |employee_document|
+      employee_document = employee_document.merge(user_id: id)
       employee_document = EmployeeDocument.new(employee_document)
       if employee_document.save
         employee_documents << employee_document
@@ -136,7 +136,9 @@ class User < ApplicationRecord
         employee_supervisors_attributes: params[:employee_supervisors_attributes],
         bank_credentials_attributes: params[:bank_credentials_attributes],
         employee_attributes: params[:employee_attributes],
-        payroll_attributes: params[:payroll_attributes])
+        payroll_attributes: params[:payroll_attributes],
+        employee_documents_attributes: params[:employee_documents_attributes],
+        )
     end
 
 
@@ -187,7 +189,6 @@ class User < ApplicationRecord
   end
 
 
-
   def get_all_position_histories(user_id)
     authorise_user(user_id)
     PositionHistory.where(employee_id: user_id)
@@ -202,13 +203,6 @@ class User < ApplicationRecord
       raise ActiveRecord::RecordNotFound
     end
   end
-
-  # def get_leave_details(employee_id)
-  #   authorise_user(employee_id)
-  #
-  #
-  #
-  # end
 
 
 
@@ -258,6 +252,17 @@ class User < ApplicationRecord
       UserJwtToken.where(user_id: employee_id).update_all(is_active: false)
       {message: "Employee with id: #{employee_id}  is deleted!!!"}
     end
+  end
+
+
+
+  def get_all_employee_documents(user)
+    user.employee_documents
+  end
+
+
+  def find_employee_document_by_id(employee, id)
+    employee.employee_documents.find(id)
   end
 
 

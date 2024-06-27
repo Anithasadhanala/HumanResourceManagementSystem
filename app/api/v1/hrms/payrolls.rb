@@ -26,9 +26,12 @@ class V1::Hrms::Payrolls < BaseApi
     end
 
     put ':id' do
-      payroll = Payroll.new.find_and_update_payroll(params)
+      permitted_params = ActionController::Parameters.new(params).permit(
+        :base_payroll)
+      permitted_params = permitted_params.merge(id: params[:id])
+      payroll = Payroll.new.find_and_update_payroll(permitted_params)
       present payroll, with: V1::Entities::Payroll
     end
-    
+
   end
 end

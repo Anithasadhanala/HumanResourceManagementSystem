@@ -2,7 +2,6 @@ class AllowanceAndDeduction < ApplicationRecord
 
   belongs_to :user, class_name: 'User', foreign_key: 'employee_id'
   validates :compensation_type, presence: true
-
   scope :active, -> { where(is_active: true) }
 
   ALLOWANCES = {
@@ -43,7 +42,6 @@ def create_allowance_and_deduction(params)
 end
 
 
-
   def find_and_update_allowance_and_deduction(params)
     allowance_deduction = AllowanceAndDeduction.find_by(employee_id: params[:employee_id],id: params[:id])
     if allowance_deduction
@@ -55,15 +53,13 @@ end
   end
 
 
-  def find_and_destroy_employee_allowance_and_deduction(params)
-    allowance_deduction = AllowanceAndDeduction.find_by(employee_id: params[:employee_id],id: params[:id])
+  def find_and_destroy_employee_allowance_and_deduction(employee_id, id)
+    allowance_deduction = AllowanceAndDeduction.find_by(employee_id: employee_id,id: id)
     if allowance_deduction
       allowance_deduction.update(is_active: false)
-      ("allowance deduction column deleted with id: #{params[:id]}")
+      ("allowance deduction column deleted with id: #{id}")
     else
       raise ActiveRecord::RecordNotFound
     end
   end
-
-
 end

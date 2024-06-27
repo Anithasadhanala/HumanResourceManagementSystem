@@ -32,8 +32,5 @@ class UserJwtToken < ApplicationRecord
       user_jwt_token
     end
   end
-
-
-
 end
 
