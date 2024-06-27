@@ -1,9 +1,8 @@
 class V1::Hrms::LeaveRequests < Grape::API
   before { authenticate_user! }
-
   resources :employees do
-    route_param :requestee_id do
-      resources :leaverequests do
+    route_param :employee_id do
+      resources :leave_requests do
 
         # Endpoint, gives all leave requests----------------------------------------------------------------------------------------
         desc 'Return all leave requests'
@@ -14,7 +13,7 @@ class V1::Hrms::LeaveRequests < Grape::API
         end
 
         get do
-          leave_requests = User.new.get_all_leave_requests(params[:requestee_id])
+          leave_requests = User.new.get_all_leave_requests(params[:employee_id])
           present(leave_requests , with: V1::Entities::LeaveRequest, type: :full)
         end
 
@@ -26,7 +25,7 @@ class V1::Hrms::LeaveRequests < Grape::API
         end
 
         get ':id' do
-          leave_request = User.new.get_leave_request(params[:requestee_id],params[:id])
+          leave_request = User.new.get_leave_request(params[:employee_id],params[:id])
           if leave_request
             present leave_request, with: V1::Entities::LeaveRequest
           end
@@ -36,8 +35,6 @@ class V1::Hrms::LeaveRequests < Grape::API
         desc 'Create a new leave_request'
         before { authenticate_admin! }
         params do
-          requires :requestee_id, type: Integer
-          requires :approver_id, type: Integer
           requires :leave_id, type: Integer
           requires :start_date, type: Date
           requires :end_date, type: Date
@@ -46,7 +43,7 @@ class V1::Hrms::LeaveRequests < Grape::API
 
         post do
           leave_request = LeaveRequest.new.create_leave_request(params)
-          present leave_request, with: V1::Entities::LeaveRequest
+          present leave_request, with: V1::Entities::LeaveRequest, type: :full
         end
 
 
@@ -65,4 +62,4 @@ class V1::Hrms::LeaveRequests < Grape::API
       end
     end
   end
-end
+  end

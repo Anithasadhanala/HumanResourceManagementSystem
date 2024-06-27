@@ -1,6 +1,7 @@
 # app/models/user.rb
 class User < ApplicationRecord
   has_secure_password
+  include AuthoriseUser
 
   has_one :employee
   has_one :payroll
@@ -119,47 +120,39 @@ class User < ApplicationRecord
     end
 
 
-  def get_leave_request(user_id,leave_request_id)
-    user = User.find(user_id)
-    if user
-      leave_request = LeaveRequest.find_by(requestee_id: user_id,id: leave_request_id)
-      if leave_request
-        leave_request
-      else
-        raise ActiveRecord::RecordNotFound
-      end
-    end
+  def get_leave_request(employee_id,leave_request_id)
+    authorise_employee(employee_id)
+    leave_request = LeaveRequest.find_by(requestee_id: employee_id,id: leave_request_id)
+    leave_request
   end
 
 
 
-  def get_all_leave_requests(user_id)
-    user = User.find(user_id)
-    if user
-      leave_requests = LeaveRequest.where(requestee_id: user_id)
-      if leave_requests
-        leave_requests
-      else
-        raise ActiveRecord::RecordNotFound
-      end
-    end
+  def get_all_leave_requests(employee_id)
+    authorise_employee(employee_id)
+    leave_requests = LeaveRequest.where(requestee_id: employee_id)
+    leave_requests
+
   end
 
   def get_allowance_and_deduction(user_id, compensation_id)
-    user = User.find(user_id)
-    if user
+    authorise_user(user_id)
       allowance_deduction = AllowanceAndDeduction.find_by(id: compensation_id, is_active: true, employee_id: user.id)
       if allowance_deduction
         allowance_deduction
       else
         raise ActiveRecord::RecordNotFound
       end
-    end
   end
 
   def get_all_allowance_and_deductions(user_id)
-    user = User.find(user_id)
-   AllowanceAndDeduction.where( is_Active:true, employee_id: user.id)
+    authorise_user(user_id)
+    allowance_deductions = AllowanceAndDeduction.where( is_active:true, employee_id: user_id)
+    if allowance_deductions
+      allowance_deductions
+    else
+      raise ActiveRecord::RecordNotFound
+    end
   end
 
 

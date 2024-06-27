@@ -3,7 +3,7 @@ class V1::Hrms::BankCredentials < Grape::API
 
   resources :employees do
     route_param :employee_id do
-      resources :bankcredentials do
+      resources :bank_credentials do
 
         # Endpoint to get all bank_credentials for a specific employee----------------------------------------------------------------------------------
         desc 'Return all bank_credentials for a specific employee'

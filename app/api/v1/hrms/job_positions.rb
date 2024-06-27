@@ -1,7 +1,7 @@
 class V1::Hrms::JobPositions < Grape::API
   before { authenticate_user! }
 
-  resources :jobpositions do
+  resources :job_positions do
 
     # Endpoint, gives all job positions----------------------------------------------------------------------------------------
     desc 'Return all job positions'

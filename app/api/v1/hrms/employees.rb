@@ -21,7 +21,6 @@ class V1::Hrms::Employees < BaseApi
     desc 'Update a employee'
 
     params do
-
         optional :user_name, type: String
         optional :phone, type: String
         optional :hired_at, type: DateTime
@@ -41,8 +40,8 @@ class V1::Hrms::Employees < BaseApi
 
     put ':id' do
       employee = Employee.new.find_and_update_employee(params)
+      puts(employee.inspect)
       present employee, with: V1::Entities::Employee
     end
-    
   end
 end

@@ -10,7 +10,7 @@ class JobHistory < ApplicationRecord
   end
 
   def find_and_update_job_history(params)
-    job_history = JobHistory.find_by_id(params[:employee_id],params[:id])
+    job_history = JobHistory.find_by(employee_id: params[:employee_id],id: params[:id])
     if job_history
       job_history.update(params)
       job_history

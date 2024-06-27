@@ -1,11 +1,12 @@
 module AuthenticationHelper
 
   def authenticate_user!
-     error!('Unauthorized user', 401) unless current_user
+     error!('Unauthenticated user', 401) unless current_user
   end
 
+
   def authenticate_admin!
-     error!('Unauthorized admin', 401) unless Current.user.role == "admin"
+     error!('Unauthorized admin, access denied for this user!!!', 401) unless Current.user.role == "admin"
   end
 
   def current_user

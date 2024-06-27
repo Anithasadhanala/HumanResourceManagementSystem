@@ -36,7 +36,7 @@ class V1::Hrms::JobHistories < Grape::API
 
       # Endpoint for updating a specific job_history---------------------------------------------------------------------------------
       desc 'Update a job_history'
-
+      before { authenticate_admin! }
       params do
         optional :from_role_id, type: Integer
         optional :to_role_id, type: Integer
@@ -50,7 +50,6 @@ class V1::Hrms::JobHistories < Grape::API
         present job_history, with: V1::Entities::JobHistory
       end
     end
-
     end
   end
 end

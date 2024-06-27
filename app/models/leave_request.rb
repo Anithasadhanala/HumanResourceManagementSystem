@@ -1,9 +1,8 @@
 class LeaveRequest < ApplicationRecord
   belongs_to :leave
   belongs_to :requestee, class_name: 'User', foreign_key: 'requestee_id'
-  belongs_to :approver, class_name: 'User', foreign_key: 'approver_id'
 
-  validates :requestee_id, :approver_id, :leave_id, :start_date, :end_date, :working_days_covered, presence: true
+  validates :requestee_id, :leave_id, :start_date, :end_date, :working_days_covered, presence: true
 
 
   enum status: {
@@ -17,6 +16,8 @@ class LeaveRequest < ApplicationRecord
   end
 
   def create_leave_request(params)
+    authorise_employee(params[:employee_id])
+    params = params.merge(requestee_id: params[:employee_id])
     LeaveRequest.create!(params)
   end
 
@@ -33,17 +34,23 @@ class LeaveRequest < ApplicationRecord
 
 
   def find_and_update_leave_request(params)
-
     leave_request = LeaveRequest.find(params[:id])
-   if leave_request.requestee_id == params[:requestee_id]
+    approver = EmployeeSupervisor.find(leave_request.requestee_id)
+    supervisor_id = approver.supervisor_id
+    secondary_supervisor_id = approver.secondary_supervisor_id
+    current_user= Current.user.id
+    puts(current_user, leave_request.requestee_id,"````````````````````````````````````````")
+   if leave_request.requestee_id == current_user
+     puts("????????????????????????????????????????????????????????????/")
       leave_request.update(params.except(:status))
-   elsif leave_request.approver_id == params[:requestee_id].to_i # chnage here
-      if params[:status]
+   elsif supervisor_id == current_user || secondary_supervisor_id == current_user
+     if params[:status]
         if !status_is_valid_enum(params[:status])
           ("not a valid status value that is requested to update")
         else
           if validate_leave(leave_request)
-            leave_request.update(status: params[:status])
+            params = params.merge(approver_id: current_user)
+            leave_request.update( params)
             leave_request
           else
             ("Your limit is exceed, cannot take leaves!!!")

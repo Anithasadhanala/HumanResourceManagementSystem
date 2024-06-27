@@ -15,9 +15,6 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
 
         # Endpoint to get a specific allowance_and_deduction by ID for a specific employee----------------------------------------------------------------------
         desc 'Return a specific allowance_and_deduction for a specific employee'
-        params do
-          requires :id, type: Integer
-        end
 
         get ':id' do
           allowance_and_deduction = User.new.get_allowance_and_deduction(params[:employee_id], params[:id])

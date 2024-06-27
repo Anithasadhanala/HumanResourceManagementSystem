@@ -7,7 +7,6 @@ class Department < ApplicationRecord
 
   scope :active, -> { where(is_active: true) }
 
-
   def get_all_departments
     Department.all.active
   end
