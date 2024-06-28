@@ -1,9 +1,37 @@
 class V1::Hrms::Users < Grape::API
   format :json
 
-  resource :users do
+  resource :employees do
 
+    # Login  Endpoint of  a user ------------------------------------------------------------------------------------------------------------------
+    desc 'Login user'
+    params do
+      requires :email, type: String
+      requires :password, type: String
+    end
+
+    post :login do
+      user = User.find_by(email: params[:email])
+      user_role = user.role
+      if user.is_active
+         if user && user.authenticate(params[:password])
+        user_valid_token = UserJwtToken.new.get_valid_token(user.id)
+        if user_valid_token
+          present user_valid_token, with: V1::Entities::Login
+        else
+          user_jwt = UserJwtToken.new.generate_jwt_token_and_store(user.id,user_role)
+          present user_jwt, with: V1::Entities::Login
+        end
+         end
+      else
+        raise ActiveRecord::RecordNotFound, {message: "User not found."}
+        end
+    end
+
+
+# create a new employee---------------------------------------------------------------------------
     desc 'signup a new user'
+    before {authenticate_user! }
     params do
       requires :email, type: String
       requires :password, type: String
@@ -71,27 +99,6 @@ class V1::Hrms::Users < Grape::API
         user = User.new.create_user(params)
         present user, with: V1::Entities::User, type: :full
         end
-    end
-
-    # Login  Endpoint of  a user ------------------------------------------------------------------------------------------------------------------
-    desc 'Login user'
-    params do
-      requires :email, type: String
-      requires :password, type: String
-    end
-
-    post :login do
-      user = User.find_by(email: params[:email])
-      user_role = user.role
-      if user && user.authenticate(params[:password])
-        user_valid_token = UserJwtToken.new.get_valid_token(user.id)
-        if user_valid_token
-          present user_valid_token, with: V1::Entities::Login
-        else
-          user_jwt = UserJwtToken.new.generate_jwt_token_and_store(user.id,user_role)
-          present user_jwt, with: V1::Entities::Login
-        end
-      end
     end
 
     #Logout Endpoint of a user -------------------------------------------------------------------------------------------------------------------

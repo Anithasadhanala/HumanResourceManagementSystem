@@ -42,7 +42,6 @@ class V1::Hrms::PayrollHistories < Grape::API
           payroll_history = PayrollHistory.new.create_payroll_history(params)
           present payroll_history, with: V1::Entities::PayrollHistory,  type: :full
         end
-
       end
     end
   end

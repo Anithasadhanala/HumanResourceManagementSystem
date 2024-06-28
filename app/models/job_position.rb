@@ -7,6 +7,8 @@ class JobPosition < ApplicationRecord
   validates :title, presence: true, uniqueness: true
   validates :description, presence: true
 
+  scope :active, -> { where(is_active: true) }
+
 
   def get_all_job_positions
     JobPosition.all.active

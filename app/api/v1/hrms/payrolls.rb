@@ -1,4 +1,4 @@
-class V1::Hrms::Payrolls < BaseApi
+class V1::Hrms::Payrolls <  Grape::API
   before { authenticate_user! }
 
   resources :payrolls do
@@ -32,6 +32,5 @@ class V1::Hrms::Payrolls < BaseApi
       payroll = Payroll.new.find_and_update_payroll(permitted_params)
       present payroll, with: V1::Entities::Payroll
     end
-
   end
 end

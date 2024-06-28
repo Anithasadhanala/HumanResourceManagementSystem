@@ -7,7 +7,7 @@ class UserJwtToken < ApplicationRecord
   def get_valid_token(user_id)
 
     valid_user = User.find_by(id: user_id, is_active: true)
-    if valid_user.nil?
+    if valid_user
       existing_tokens = UserJwtToken.where(user_id: user_id).order(created_at: :desc)
       valid_token = existing_tokens.detect do |token|
         begin

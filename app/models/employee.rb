@@ -14,13 +14,15 @@ class Employee < ApplicationRecord
 
 
   def find_by_id(employee_id)
-      authorise_user(employee_id)
+    employee = Employee.find_by(id: employee_id)
+      authorise_user(employee.user_id)
       Employee.find(employee_id)
   end
 
 
   def find_and_update_employee(params)
     employee = Employee.find(params[:id])
+    authorise_user(employee.user_id)
     employee_instance = find_by_id(employee.id)
     employee_instance.update(params.except(:job_position_id))
     employee_instance
@@ -29,7 +31,7 @@ class Employee < ApplicationRecord
 
   def update_employee_job_position(params)
     employee = Employee.find(params[:employee_id])
-    if !employee.job_position_id == params[:to_role_id]
+    if !(employee.job_position_id == params[:to_role_id])
     employee.update(job_position_id: params[:to_role_id])
     employee
     else
@@ -39,7 +41,8 @@ class Employee < ApplicationRecord
 
 
   def get_job_history(employee_id,job_history_id)
-    authorise_user(employee_id)
+    employee = Employee.find(employee_id)
+    authorise_user(employee.user_id)
     employee = Employee.find(employee_id)
     if employee
       employee.job_histories.find( job_history_id)
@@ -48,7 +51,8 @@ class Employee < ApplicationRecord
 
 
   def get_all_job_histories(employee_id)
-    authorise_user(employee_id)
+    employee = Employee.find(employee_id)
+    authorise_user(employee.user_id)
     employee = Employee.find(employee_id)
     if employee
     employee.job_histories
@@ -57,18 +61,24 @@ class Employee < ApplicationRecord
 
 
   def get_all_bank_credentials(employee_id)
-    authorise_user(employee_id)
     employee = Employee.find(employee_id)
+    authorise_user(employee.user_id)
     if employee
-      employee.bank_credentials.active
+      bank_credentials = BankCredential.active.where(employee_id: employee.id)
+      if bank_credentials
+      bank_credentials
+      else
+        raise ActiveRecord::RecordNotFound
+    end
     end
   end
 
 
   def get_bank_credential(employee_id, job_history_id)
-    authorise_user(employee_id)
     employee = Employee.find(employee_id)
-      bank_credential = employee.bank_credentials.active.find_by(id: job_history_id)
+    authorise_user(employee.user_id)
+    employee = Employee.find(employee_id)
+      bank_credential = BankCredential.active.find_by(id: job_history_id, employee_id: employee.user_id)
       if bank_credential
         bank_credential
       else

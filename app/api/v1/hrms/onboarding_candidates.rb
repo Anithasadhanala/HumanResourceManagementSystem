@@ -9,9 +9,8 @@ class V1::Hrms::OnboardingCandidates < Grape::API
         error!({ error: "Opening not found" }, 404) unless @opening
       end
 
-
       resources :onboarding_candidates do
-
+        before { authenticate_admin! }
         # Endpoint, gives all onboarding_candidates----------------------------------------------------------------------------------------
         desc 'Return all onboarding_candidates'
         params do
@@ -35,13 +34,14 @@ class V1::Hrms::OnboardingCandidates < Grape::API
           onboarding_candidate = Opening.new.find_onboarding_candidate_by_id(@opening,params[:id])
           if onboarding_candidate
             present onboarding_candidate, with: V1::Entities::OnboardingCandidate, type: :full
+          else
+            {error: "Record not found"}
           end
         end
 
 
         # Endpoint to create a new onboarding_candidate ---------------------------------------------------------------------------------------
         desc 'Create a new onboarding_candidate'
-        before { authenticate_admin! }
         params do
           requires :onboarding_candidates, type: Array do
             requires :name, type: String
@@ -55,8 +55,6 @@ class V1::Hrms::OnboardingCandidates < Grape::API
           onboarding_candidate = OnboardingCandidate.new.create_onboarding_candidates(params[:onboarding_candidates])
           present onboarding_candidate, with: V1::Entities::OnboardingCandidate, type: :full
         end
-
-
       end
     end
   end

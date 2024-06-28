@@ -18,7 +18,6 @@ class V1::Hrms::EmployeeDocuments < Grape::API
           employee_documents = User.new.get_all_employee_documents(@employee)
           present employee_documents, with: V1::Entities::EmployeeDocument, type: :full
         end
-
       end
     end
   end

@@ -8,7 +8,6 @@ class Root < Grape::API
   helpers AuthenticationHelper
   include V1::Exceptions::ExceptionHandler
 
-
   mount V1::Hrms::Users
   mount V1::Hrms::Departments
   mount V1::Hrms::JobPositions

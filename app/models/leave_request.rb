@@ -1,4 +1,5 @@
 class LeaveRequest < ApplicationRecord
+  include AuthoriseUser
 
   belongs_to :leave
   belongs_to :requestee, class_name: 'User', foreign_key: 'requestee_id'
@@ -16,9 +17,10 @@ class LeaveRequest < ApplicationRecord
   end
 
   def create_leave_request(params)
-    authorise_employee(params[:employee_id])
-    params = params.merge(requestee_id: params[:employee_id])
-    LeaveRequest.create!(params)
+    employee = Employee.find_by(id: params[:employee_id])
+    authorise_employee(employee.user_id)
+    params = params.merge(requestee_id: employee.user_id)
+    LeaveRequest.create!(params.except(:employee_id))
   end
 
 
@@ -35,15 +37,17 @@ class LeaveRequest < ApplicationRecord
 
 
   def find_and_update_leave_request(params)
-    leave_request = LeaveRequest.find(params[:id])
+    puts("+++++++++++++++++++++++++++++++++++")
+    leave_request = LeaveRequest.find_by(params[:id])
     approver = EmployeeSupervisor.find(leave_request.requestee_id)
     supervisor_id = approver.supervisor_id
     secondary_supervisor_id = approver.secondary_supervisor_id
     current_user= Current.user.id
+    employee = Employee.find_by(id: params[:requestee_id])
     puts(current_user, leave_request.requestee_id,"````````````````````````````````````````")
-   if leave_request.requestee_id == current_user
-     puts("????????????????????????????????????????????????????????????/")
-      leave_request.update(params.except(:status))
+   if Current.user.id == current_user
+     leave_request.update(params.except(:status,:employee_id,:id))
+     leave_request
    elsif supervisor_id == current_user || secondary_supervisor_id == current_user
      if params[:status]
         if !status_is_valid_enum(params[:status])
@@ -61,7 +65,6 @@ class LeaveRequest < ApplicationRecord
         ("supervisor can't update the requested fields!!!")
       end
    else
-
          {error: "Unauthorized access - 402" }
        end
   end

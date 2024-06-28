@@ -1,14 +1,17 @@
 class V1::Hrms::Leaves < Grape::API
   before { authenticate_user! }
 
-  resources :leaves do
-
-
+  helpers do
     def leave_permitted_attributes(params)
-     ActionController::Parameters.new(params).permit(
+      ActionController::Parameters.new(params).permit(
         :title,
+        :days_count,
         :description)
     end
+  end
+
+  resources :leaves do
+
 
     # Endpoint, gives all leaves----------------------------------------------------------------------------------------
     desc 'Return all leaves'
@@ -47,7 +50,7 @@ class V1::Hrms::Leaves < Grape::API
     post do
       permitted_params = leave_permitted_attributes(params)
       leave = Leave.new.create_leave(permitted_params)
-      present leave, with: V1::Entities::Leave
+      present leave, with: V1::Entities::Leave, type: :full
     end
 
 
@@ -76,7 +79,5 @@ class V1::Hrms::Leaves < Grape::API
       leave= Leave.new.find_and_destroy(params[:id])
       leave
     end
-
-
   end
 end

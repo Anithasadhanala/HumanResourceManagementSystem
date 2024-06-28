@@ -10,8 +10,9 @@ class Payroll < ApplicationRecord
 
 
   def find_and_update_payroll(params)
-    Payroll.find(params[:id])
-    payroll = Payroll.update(params)
+    payroll = Payroll.find(params[:id])
+    puts(payroll.id)
+    payroll = payroll.update!(params)
     payroll
   end
 end

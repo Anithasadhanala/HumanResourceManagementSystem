@@ -1,14 +1,17 @@
-class V1::Hrms::Departments < BaseApi
+class V1::Hrms::Departments <  Grape::API
   before { authenticate_user! }
+
+  helpers do
+    def department_permitted_attributes(params)
+      ActionController::Parameters.new(params).permit(
+        :name,
+        :description)
+    end
+  end
 
   resources :departments do
 
     # accepts params and returns, restricted params
-    def department_permitted_attributes(params)
-      ActionController::Parameters.new(params).permit(
-        name,
-        description)
-    end
 
 
     # Endpoint, gives all departments----------------------------------------------------------------------------------------

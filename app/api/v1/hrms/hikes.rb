@@ -1,6 +1,20 @@
 class V1::Hrms::Hikes < Grape::API
   before {authenticate_user! }
 
+  helpers do
+    def hike_permitted_attributes(params)
+      ActionController::Parameters.new(params).permit(
+        :reason,
+        :percentage_value,
+        :account_number,
+        :ifsc_code,
+        :bank_branch_code,
+        :account_type,
+        :is_active)
+    end
+  end
+
+
   resources :employees do
     route_param :employee_id do
 
@@ -8,19 +22,6 @@ class V1::Hrms::Hikes < Grape::API
       before do
         @employee = User.find_by(id: params[:employee_id])
         error!({ error: "Employee not found" }, 404) unless @employee
-      end
-
-      def hike_permitted_attributes(params)
-        permitted_params = ActionController::Parameters.new(params).permit(
-          :reason,
-          :percentage_value,
-          :account_number,
-          :ifsc_code,
-          :bank_branch_code,
-          :account_type,
-          :is_active)
-        permitted_params.merge(employee_id: params[:employee_id])
-        permitted_params
       end
 
 
@@ -48,6 +49,7 @@ class V1::Hrms::Hikes < Grape::API
 
         post do
           permitted_params = hike_permitted_attributes(params)
+          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           hike = Hike.new.create_hike(permitted_params)
           present hike, with: V1::Entities::Hike,  type: :full
         end
@@ -63,6 +65,7 @@ class V1::Hrms::Hikes < Grape::API
         put ':id' do
           permitted_params = hike_permitted_attributes(params)
           permitted_params = permitted_params.merge(id: params[:id])
+          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           hike = Hike.new.find_and_update_hike(permitted_params)
           present hike, with: V1::Entities::Hike
         end

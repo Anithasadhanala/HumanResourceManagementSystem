@@ -128,6 +128,7 @@ class User < ApplicationRecord
 
 
     def create_user(params)
+        authorise_admin
         User.create!(
         role: params[:role],
         email: params[:email],
@@ -157,9 +158,10 @@ class User < ApplicationRecord
 
   end
 
-  def get_allowance_and_deduction(user_id, compensation_id)
-    authorise_user(user_id)
-      allowance_deduction = AllowanceAndDeduction.find_by(id: compensation_id, is_active: true, employee_id: user.id)
+  def get_allowance_and_deduction(employee_id, compensation_id)
+    employee = Employee.find_by(id: employee_id)
+    authorise_user(employee.user_id)
+      allowance_deduction = AllowanceAndDeduction.find_by(id: compensation_id, is_active: true, employee_id: employee_id)
       if allowance_deduction
         allowance_deduction
       else
@@ -167,9 +169,9 @@ class User < ApplicationRecord
       end
   end
 
-  def get_all_allowance_and_deductions(user_id)
-    authorise_user(user_id)
-    allowance_deductions = AllowanceAndDeduction.where( is_active:true, employee_id: user_id)
+  def get_all_allowance_and_deductions(employee_id)
+    authorise_user(employee.user_id)
+    allowance_deductions = AllowanceAndDeduction.where( is_active:true, employee_id: employee_id)
     if allowance_deductions
       allowance_deductions
     else
@@ -189,14 +191,16 @@ class User < ApplicationRecord
   end
 
 
-  def get_all_position_histories(user_id)
-    authorise_user(user_id)
-    PositionHistory.where(employee_id: user_id)
+  def get_all_position_histories(employee_id)
+    employee  = Employee.find(employee_id)
+    authorise_user(employee.user_id)
+    PositionHistory.where(employee_id: employee_id)
   end
 
-  def get_position_history(user_id, id)
-    authorise_user(user_id)
-    position_history = PositionHistory.find_by(employee_id: user_id, id: id)
+  def get_position_history(employee_id, id)
+    employee  = Employee.find(employee_id)
+    authorise_user(employee.user_id)
+    position_history = PositionHistory.find_by(employee_id: employee_id, id: id)
     if position_history
       position_history
     else
@@ -207,7 +211,8 @@ class User < ApplicationRecord
 
 
   def get_leave_details(employee_id)
-    authorise_user(employee_id)
+    employee = Employee.find(employee_id)
+    authorise_user(employee.user_id)
     leave_requests = LeaveRequest.where(requestee_id: employee_id).approved
 
     leave_details = leave_requests.group_by(&:leave).map do |leave, requests|
@@ -229,7 +234,8 @@ class User < ApplicationRecord
 
 
   def get_all_payroll_histories(employee_id)
-    authorise_user(employee_id)
+    employee = Employee.find(employee_id)
+    authorise_user(employee.user_id)
     payrolls = Payroll.where(employee_id: employee_id).pluck(:id)
     payrolls = PayrollHistory.where(payroll_id: payrolls)
     if payrolls
@@ -239,25 +245,33 @@ class User < ApplicationRecord
     end
 
 
-  def get_payroll_history(user_id, id)
-    authorise_user(user_id)
+  def get_payroll_history(employee_id, id)
+    employee = Employee.find(employee_id)
+    authorise_user(employee.user_id)
     PayrollHistory.find(id)
   end
 
 
   def delete_employee(employee_id)
-    user = User.find(employee_id)
+    user = User.find_by(id: employee_id, is_active: true)
     if user
       user.update(is_active: false)
       UserJwtToken.where(user_id: employee_id).update_all(is_active: false)
       {message: "Employee with id: #{employee_id}  is deleted!!!"}
+    else
+      raise ActiveRecord::RecordNotFound, {message: "This employee, is not Found"}
     end
   end
 
 
 
   def get_all_employee_documents(user)
-    user.employee_documents
+    documents =  user.employee_documents
+    if documents
+      documents
+    else
+      raise ActiveRecord::RecordNotFound
+    end
   end
 
 

@@ -1,33 +1,31 @@
-class V1::Hrms::Employees < BaseApi
+class V1::Hrms::Employees <  Grape::API
   before { authenticate_user! }
+
+  helpers do
+    def employee_details_permitted_attributes(params)
+      ActionController::Parameters.new(params).permit(
+        :user_name,
+        :phone,
+        :hired_at,
+        :personal_email,
+        :emergency_contact_phone,
+        :emergency_contact_name,
+        :gender,
+        :experience_in_months,
+        :qualifications,
+        :employee_type,
+        :employment_type,
+        :department_id,
+        :first_name,
+        :last_name
+      )
+    end
+  end
 
   resources :employees do
 
-    def employee_details_permitted_attributes(params)
-     ActionController::Parameters.new(params).permit(
-        :user_name,
-       :phone,
-       :hired_at,
-       :personal_email,
-       :emergency_contact_phone,
-       :emergency_contact_name,
-       :gender,
-       :experience_in_months,
-       :qualifications,
-       :employee_type,
-       :employment_type,
-       :department_id,
-       :first_name,
-       :last_name)
-    end
-
-
-
     # Endpoint to get a specific employee by ID-------------------------------------------------------------------------------
     desc 'Return a specific employee'
-    params do
-      requires :id, type: Integer
-    end
 
     get ':id' do
       employee = Employee.new.find_by_id(params[:id])
@@ -36,6 +34,9 @@ class V1::Hrms::Employees < BaseApi
 
 
     # Endpoint for updating a specific employee---------------------------------------------------------------------------------
+
+
+
     desc 'Update a employee'
 
     params do

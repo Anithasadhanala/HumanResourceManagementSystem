@@ -1,6 +1,19 @@
 class V1::Hrms::Addresses < Grape::API
   before { authenticate_user! }
 
+  helpers do
+    def address_permitted_attributes(params)
+     ActionController::Parameters.new(params).permit(
+        :d_no,
+        :landmark,
+        :city,
+        :zip_code,
+        :country,
+        :state,
+        :is_permanent)
+    end
+  end
+
 
   resources :employees do
     route_param :employee_id do
@@ -13,19 +26,6 @@ class V1::Hrms::Addresses < Grape::API
 
 
       # accepts params and returns, restricted params
-      def address_permitted_attributes(params)
-        permitted_params = ActionController::Parameters.new(params).permit(
-          :d_no,
-          :landmark,
-          :city,
-          :zip_code,
-          :country,
-          :is_permanent)
-        permitted_params.merge(employee_id: params[:employee_id])
-        permitted_params
-      end
-
-
       resources :addresses do
 
         # Endpoint to get all addresses for a specific employee----------------------------------------------------------------------------------
@@ -61,6 +61,7 @@ class V1::Hrms::Addresses < Grape::API
 
         post do
           permitted_params = address_permitted_attributes(params)
+          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           address = Address.new.create_address(permitted_params)
           present address, with: V1::Entities::Address, type: :full
         end
@@ -81,6 +82,7 @@ class V1::Hrms::Addresses < Grape::API
         put ':id' do
           permitted_params = address_permitted_attributes(params)
           permitted_params = permitted_params.merge(id: params[:id])
+          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           address = Address.new.find_and_update_address(permitted_params)
           present address, with: V1::Entities::Address
         end

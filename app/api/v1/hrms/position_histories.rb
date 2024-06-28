@@ -1,6 +1,15 @@
 class V1::Hrms::PositionHistories < Grape::API
   before {authenticate_user! }
 
+  helpers  do
+    def position_history_permitted_attributes(params)
+      ActionController::Parameters.new(params).permit(
+         :to_role_id,
+       :switch_reason,
+       :switch_type)
+    end
+  end
+
   resources :employees do
     route_param :employee_id do
 
@@ -8,19 +17,6 @@ class V1::Hrms::PositionHistories < Grape::API
       before do
         @employee = User.find_by(id: params[:employee_id])
         error!({ error: "Employee not found" }, 404) unless @employee
-      end
-
-      def position_history_permitted_attributes(params)
-        permitted_params = ActionController::Parameters.new(params).permit(
-          :reason,
-          :percentage_value,
-          :account_number,
-          :ifsc_code,
-          :bank_branch_code,
-          :account_type,
-          :is_active)
-        permitted_params.merge(employee_id: params[:employee_id])
-        permitted_params
       end
 
 
@@ -37,9 +33,6 @@ class V1::Hrms::PositionHistories < Grape::API
 
         # Endpoint to get a specific position_history by ID for a specific employee----------------------------------------------------------------------
         desc 'Return a specific position_history for a specific employee'
-        params do
-          requires :id, type: Integer
-        end
 
         get ':id' do
           position_history = User.new.get_position_history(params[:employee_id], params[:id])
@@ -49,18 +42,19 @@ class V1::Hrms::PositionHistories < Grape::API
 
         # Endpoint to update a specific position_history for a specific employee------------------------------------------------------------------------
         desc 'Update a specific position_history for a specific employee'
-        before {authenticate_user! }
+        before {authenticate_admin! }
         params do
           optional :to_role_id, type: Integer
           optional :switch_reason, type: String
           optional :switch_type, type: String
         end
 
-        put ':id' do
+        post  do
           permitted_params = position_history_permitted_attributes(params)
           permitted_params = permitted_params.merge(id: params[:id])
-          position_history = PositionHistory.new.find_and_update_position_history(permitted_params)
-          present position_history, with: V1::Entities::PositionHistory
+          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
+          position_history = PositionHistory.new.job_switch_from_role_to_role(permitted_params)
+          present position_history, with: V1::Entities::PositionHistory, type: :full
         end
       end
     end

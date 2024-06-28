@@ -20,9 +20,13 @@ end
 
 
   def get_all_onboarding_candidates_for_opening(opening)
-    opening.onboarding_candidates
+    openings = opening.onboarding_candidates
+    if openings
+      openings
+    else
+      raise ActiveRecord::RecordNotFound
+    end
   end
-
 
   def find_onboarding_candidate_by_id(opening, id)
     opening.onboarding_candidates.find(id)

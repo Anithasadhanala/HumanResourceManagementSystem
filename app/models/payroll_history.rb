@@ -1,6 +1,7 @@
 class PayrollHistory < ApplicationRecord
 
   belongs_to :payroll
+  has_one :bank_credential
 
 
   def payroll_calculation(employee_id)
@@ -19,7 +20,8 @@ class PayrollHistory < ApplicationRecord
     final_payroll = payroll_calculation(params[:employee_id])
     payroll_id = Payroll.where(employee_id: params[:employee_id]).pluck(:id).first
     User.find(params[:employee_id])
-    bank_credential = BankCredential.find(params[:bank_credential_id])
+
+    bank_credential = BankCredential.find_by(id: params[:bank_credential_id])
     if payroll_id && bank_credential
       PayrollHistory.create!(
         payroll_id: payroll_id,

@@ -1,13 +1,16 @@
 class V1::Hrms::JobPositions < Grape::API
   before { authenticate_user! }
 
-  resources :job_positions do
-
+  helpers do
     def job_position_permitted_attributes(params)
       ActionController::Parameters.new(params).permit(
         :title,
         :description)
     end
+  end
+
+  resources :job_positions do
+
 
     # Endpoint, gives all job positions----------------------------------------------------------------------------------------
     desc 'Return all job positions'

@@ -1,5 +1,19 @@
 class V1::Hrms::Openings < Grape::API
   before { authenticate_user! }
+
+  helpers do
+    def opening_permitted_attributes(params)
+       ActionController::Parameters.new(params).permit(
+        :required_qualifications,
+        :max_salary,
+        :min_salary,
+        :openings_count,
+        :occupancy_count,
+        :job_position_id,
+        :employment_type)
+    end
+  end
+
   resources :job_positions do
     route_param :job_position_id do
 
@@ -8,16 +22,6 @@ class V1::Hrms::Openings < Grape::API
         error!({ error: "JobPosition not found" }, 404) unless @job_position
       end
 
-
-      def opening_permitted_attributes(params)
-        permitted_params = ActionController::Parameters.new(params).permit(
-           :required_qualifications,
-         :max_salary,
-         :min_salary,
-         :employment_type,)
-        permitted_params.merge(job_position_id: params[:job_position_id])
-        permitted_params
-      end
 
     resources :openings do
 
@@ -43,9 +47,7 @@ class V1::Hrms::Openings < Grape::API
 
     get ':id' do
       opening = JobPosition.new.find_opening_by_id(@job_position,params[:id])
-      if opening
-        present opening, with: V1::Entities::Opening
-      end
+      present opening, with: V1::Entities::Opening
     end
 
 
@@ -61,6 +63,7 @@ class V1::Hrms::Openings < Grape::API
 
     post do
       permitted_params = opening_permitted_attributes(params)
+      permitted_params = permitted_params.merge(job_position_id: params[:job_position_id])
       opening = Opening.new.create_opening(permitted_params)
       present opening, with: V1::Entities::Opening, type: :full
     end
@@ -79,12 +82,11 @@ class V1::Hrms::Openings < Grape::API
     put ':id' do
       permitted_params = opening_permitted_attributes(params)
       permitted_params = permitted_params.merge(id: params[:id])
+      permitted_params.merge(job_position_id: params[:job_position_id])
       opening = Opening.new.find_and_update_opening(permitted_params)
       present opening, with: V1::Entities::Opening
     end
     end
-
-
     end
   end
 end

@@ -7,7 +7,8 @@ class Address < ApplicationRecord
 
 
   def get_all_addresses(employee_id)
-    authorise_user(employee_id)
+    employee = Employee.find(employee_id)
+    authorise_user(employee.user_id)
       address = Address.active.where(employee_id: employee_id)
       if address
         address
@@ -17,7 +18,8 @@ class Address < ApplicationRecord
   end
 
   def find_by_id(employee_id,id)
-     authorise_user(employee_id)
+    employee = Employee.find(employee_id)
+     authorise_user(employee.user_id)
       address = Address.active.find_by( id: id, employee_id: employee_id )
       if address
         address
@@ -44,17 +46,19 @@ class Address < ApplicationRecord
 
 
   def find_and_update_address(params)
-    authorise_user(params[:employee_id])
+    employee = Employee.find(params[:employee_id])
+    authorise_user(employee.user_id)
     address = find_by_id(params[:employee_id],params[:id])
     if address
-      address.update(params.except(:is_permanent))
+      address.update(params)
       address
     end
   end
 
 
   def find_and_destroy_employee_address(employee_id, id)
-    authorise_user(params[:employee_id])
+    employee = Employee.find(employee_id)
+    authorise_user(employee.user_id)
     address = find_by_id(employee_id,id)
     if address
       address.update(is_active: false)

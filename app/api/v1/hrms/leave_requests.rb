@@ -1,6 +1,17 @@
 class V1::Hrms::LeaveRequests < Grape::API
   before { authenticate_user! }
 
+  helpers do
+    def leave_request_permitted_attributes(params)
+      ActionController::Parameters.new(params).permit(
+        :leave_id,
+        :start_date,
+        :end_date,
+        :working_days_covered)
+    end
+  end
+
+
   resources :employees do
     route_param :employee_id do
 
@@ -10,15 +21,6 @@ class V1::Hrms::LeaveRequests < Grape::API
         error!({ error: "Employee not found" }, 404) unless @employee
       end
 
-      def leave_request_permitted_attributes(params)
-        permitted_params = ActionController::Parameters.new(params).permit(
-           :leave_id,
-         :start_date,
-         :end_date,
-         :working_days_covered)
-        permitted_params.merge(employee_id: @employee.id)
-        permitted_params
-      end
 
       resources :leave_requests do
 
@@ -48,7 +50,7 @@ class V1::Hrms::LeaveRequests < Grape::API
 
         # Endpoint to create a new leave_request---------------------------------------------------------------------------------------
         desc 'Create a new leave_request'
-        before { authenticate_admin! }
+
         params do
           requires :leave_id, type: Integer
           requires :start_date, type: Date
@@ -58,6 +60,7 @@ class V1::Hrms::LeaveRequests < Grape::API
 
         post do
           permitted_params = leave_request_permitted_attributes(params)
+          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           leave_request = LeaveRequest.new.create_leave_request(permitted_params)
           present leave_request, with: V1::Entities::LeaveRequest, type: :full
         end
@@ -75,8 +78,9 @@ class V1::Hrms::LeaveRequests < Grape::API
         put ':id' do
           permitted_params = leave_request_permitted_attributes(params)
           permitted_params = permitted_params.merge(id: params[:id])
+          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           leave_request = LeaveRequest.new.find_and_update_leave_request(permitted_params)
-          present leave_request
+          present leave_request, with: V1::Entities::LeaveRequest
         end
       end
 
@@ -89,7 +93,6 @@ class V1::Hrms::LeaveRequests < Grape::API
           User.new.get_leave_details(params[:employee_id])
           end
       end
-
     end
   end
 end
