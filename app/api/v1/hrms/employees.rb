@@ -70,7 +70,5 @@ class V1::Hrms::Employees <  Grape::API
       delete = User.new.delete_employee(params[:id])
       delete
     end
-
-
   end
 end

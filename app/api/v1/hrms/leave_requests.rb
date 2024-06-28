@@ -7,7 +7,8 @@ class V1::Hrms::LeaveRequests < Grape::API
         :leave_id,
         :start_date,
         :end_date,
-        :working_days_covered)
+        :working_days_covered,
+      :status)
     end
   end
 
@@ -80,7 +81,7 @@ class V1::Hrms::LeaveRequests < Grape::API
           permitted_params = permitted_params.merge(id: params[:id])
           permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           leave_request = LeaveRequest.new.find_and_update_leave_request(permitted_params)
-          present leave_request, with: V1::Entities::LeaveRequest
+          # present leave_request, with: V1::Entities::LeaveRequest
         end
       end
 

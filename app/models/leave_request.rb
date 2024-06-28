@@ -37,15 +37,14 @@ class LeaveRequest < ApplicationRecord
 
 
   def find_and_update_leave_request(params)
-    puts("+++++++++++++++++++++++++++++++++++")
+
     leave_request = LeaveRequest.find_by(params[:id])
-    approver = EmployeeSupervisor.find(leave_request.requestee_id)
+    approver = EmployeeSupervisor.find_by(employee_id: params[:employee_id])
     supervisor_id = approver.supervisor_id
     secondary_supervisor_id = approver.secondary_supervisor_id
     current_user= Current.user.id
-    employee = Employee.find_by(id: params[:requestee_id])
-    puts(current_user, leave_request.requestee_id,"````````````````````````````````````````")
-   if Current.user.id == current_user
+
+   if current_user == params[:employee_id]
      leave_request.update(params.except(:status,:employee_id,:id))
      leave_request
    elsif supervisor_id == current_user || secondary_supervisor_id == current_user
@@ -55,18 +54,18 @@ class LeaveRequest < ApplicationRecord
         else
           if validate_leave(leave_request)
             params = params.merge(approver_id: current_user)
-            leave_request.update( params)
+            leave_request.update( params.except(:employee_id))
             leave_request
           else
-            ("Your limit is exceed, cannot take leaves!!!")
+            raise RuntimeError, {message: "This Employee leaves are reached full."}
           end
         end
       else
-        ("supervisor can't update the requested fields!!!")
+        raise RuntimeError, {message: "supervisor can't update the requested fields!!!"}
       end
    else
          {error: "Unauthorized access - 402" }
-       end
+   end
   end
 
 end
