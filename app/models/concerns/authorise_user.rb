@@ -8,6 +8,7 @@ module AuthoriseUser
     end
   end
 
+
   def authorise_admin
     if  !(Current.user.role == "admin")
       raise RuntimeError, {message: "Not Authorised to access this content!!!"}

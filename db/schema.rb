@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_27_185611) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_29_124823) do
   create_table "addresses", force: :cascade do |t|
     t.string "d_no", null: false
     t.string "landmark", null: false
@@ -109,8 +109,10 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_185611) do
     t.datetime "updated_at", null: false
     t.string "first_name"
     t.string "last_name"
+    t.integer "onboarding_candidate_id"
     t.index ["department_id"], name: "index_employees_on_department_id"
     t.index ["job_position_id"], name: "index_employees_on_job_position_id"
+    t.index ["onboarding_candidate_id"], name: "index_employees_on_onboarding_candidate_id"
     t.index ["user_id"], name: "index_employees_on_user_id"
   end
 
@@ -176,6 +178,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_185611) do
     t.string "phone", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_onboarded", default: false
     t.index ["opening_id"], name: "index_onboarding_candidates_on_opening_id"
   end
 
@@ -207,7 +210,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_185611) do
 
   create_table "payrolls", force: :cascade do |t|
     t.integer "employee_id", null: false
-    t.integer "base_payroll", null: false
+    t.float "base_payroll"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["employee_id"], name: "index_payrolls_on_employee_id"
@@ -215,15 +218,13 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_185611) do
 
   create_table "position_histories", force: :cascade do |t|
     t.integer "employee_id", null: false
-    t.integer "from_role_id", null: false
-    t.integer "to_role_id", null: false
-    t.string "switch_reason", null: false
     t.string "switch_type", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "job_position_id"
+    t.date "joined_at"
     t.index ["employee_id"], name: "index_position_histories_on_employee_id"
-    t.index ["from_role_id"], name: "index_position_histories_on_from_role_id"
-    t.index ["to_role_id"], name: "index_position_histories_on_to_role_id"
+    t.index ["job_position_id"], name: "index_position_histories_on_job_position_id"
   end
 
   create_table "user_jwt_tokens", force: :cascade do |t|
@@ -253,6 +254,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_185611) do
   add_foreign_key "employee_supervisors", "users", column: "supervisor_id"
   add_foreign_key "employees", "departments"
   add_foreign_key "employees", "job_positions"
+  add_foreign_key "employees", "onboarding_candidates"
   add_foreign_key "employees", "users"
   add_foreign_key "hikes", "users", column: "employee_id"
   add_foreign_key "job_histories", "employees"
@@ -266,8 +268,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_27_185611) do
   add_foreign_key "payroll_histories", "bank_credentials"
   add_foreign_key "payroll_histories", "payrolls"
   add_foreign_key "payrolls", "users", column: "employee_id"
-  add_foreign_key "position_histories", "job_positions", column: "from_role_id"
-  add_foreign_key "position_histories", "job_positions", column: "to_role_id"
+  add_foreign_key "position_histories", "job_positions"
   add_foreign_key "position_histories", "users", column: "employee_id"
   add_foreign_key "user_jwt_tokens", "users"
 end

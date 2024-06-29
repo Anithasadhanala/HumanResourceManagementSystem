@@ -7,8 +7,12 @@ class Address < ApplicationRecord
 
 
   def get_all_addresses(employee_id)
-    employee = Employee.find(employee_id)
-    authorise_user(employee.user_id)
+
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
       address = Address.active.where(employee_id: employee_id)
       if address
         address
@@ -17,10 +21,12 @@ class Address < ApplicationRecord
       end
   end
 
-  def find_by_id(employee_id,id)
-    employee = Employee.find(employee_id)
-     authorise_user(employee.user_id)
-      address = Address.active.find_by( id: id, employee_id: employee_id )
+  def find_by_id(id,employee_id)
+
+    if employee_id.present?
+      authorise_user(employee_id)
+    end
+      address = Address.active.find_by( id: id)
       if address
         address
       else
@@ -35,31 +41,28 @@ class Address < ApplicationRecord
 
 
   def create_address(params)
-    authorise_user(params[:employee_id])
     validate_address =  employee_has_active_address_type?(params[:employee_id], params[:is_permanent])
     if validate_address
       raise RuntimeError, {message: "You cannot add this address type, already exists"}
     else
+      params.merge!(employee_id: Current.user.id)
       Address.create!(params)
     end
   end
 
 
   def find_and_update_address(params)
-    employee = Employee.find(params[:employee_id])
-    authorise_user(employee.user_id)
-    address = find_by_id(params[:employee_id],params[:id])
+    address = find_by_id(params[:id])
     if address
+      params  = params.merge(employee_id: Current.user.id)
       address.update(params)
       address
     end
   end
 
 
-  def find_and_destroy_employee_address(employee_id, id)
-    employee = Employee.find(employee_id)
-    authorise_user(employee.user_id)
-    address = find_by_id(employee_id,id)
+  def find_and_destroy_employee_address( id)
+    address = find_by_id(id)
     if address
       address.update(is_active: false)
       { message: "address deleted successfully with id : #{address.id}" }

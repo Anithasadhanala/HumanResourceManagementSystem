@@ -30,9 +30,9 @@ class Employee < ApplicationRecord
 
 
   def update_employee_job_position(params)
-    employee = Employee.find(params[:employee_id])
-    if !(employee.job_position_id == params[:to_role_id])
-    employee.update(job_position_id: params[:to_role_id])
+    employee = Employee.find_by(user_id: params[:employee_id])
+    if !(employee.job_position_id.to_i == params[:job_position_id].to_i)
+    employee.update(job_position_id: params[:job_position_id])
     employee
     else
       raise RuntimeError, {message: "You cannot switch an employee position to itself!!!"}
@@ -61,28 +61,24 @@ class Employee < ApplicationRecord
 
 
   def get_all_bank_credentials(employee_id)
-    employee = Employee.find(employee_id)
-    authorise_user(employee.user_id)
-    if employee
-      bank_credentials = BankCredential.active.where(employee_id: employee.id)
-      if bank_credentials
-      bank_credentials
-      else
-        raise ActiveRecord::RecordNotFound
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
     end
-    end
+    BankCredential.active.where(employee_id:employee_id)
   end
 
 
-  def get_bank_credential(employee_id, job_history_id)
-    employee = Employee.find(employee_id)
-    authorise_user(employee.user_id)
-    employee = Employee.find(employee_id)
-      bank_credential = BankCredential.active.find_by(id: job_history_id, employee_id: employee.user_id)
-      if bank_credential
-        bank_credential
-      else
-        raise ActiveRecord::RecordNotFound
-      end
+  def get_bank_credential(id,employee_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    end
+    bank_credential = BankCredential.active.find_by(id: id)
+    if bank_credential
+      bank_credential
+    else
+      raise ActiveRecord::RecordNotFound
+    end
   end
 end

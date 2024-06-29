@@ -11,20 +11,15 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
     end
   end
 
-  resources :employees do
-    route_param :employee_id do
-
-      # validating provided employee exists
-      before do
-        @employee = User.find_by(id: params[:employee_id])
-        error!({ error: "Employee not found" }, 404) unless @employee
-      end
-
 
       resources :allowance_and_deductions do
 
         # Endpoint to get all allowance_and_deductions for a specific employee----------------------------------------------------------------------------------
         desc 'Return all allowance_and_deductions for a specific employee'
+        params do
+          optional :employee_id, type: Integer
+        end
+
         get do
           allowance_and_deductions = User.new.get_all_allowance_and_deductions(params[:employee_id])
           present allowance_and_deductions, with: V1::Entities::AllowanceAndDeduction
@@ -33,6 +28,10 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
 
         # Endpoint to get a specific allowance_and_deduction by ID for a specific employee----------------------------------------------------------------------
         desc 'Return a specific allowance_and_deduction for a specific employee'
+        params do
+          optional :employee_id,type: Integer
+        end
+
         get ':id' do
           allowance_and_deduction = User.new.get_allowance_and_deduction(params[:employee_id], params[:id])
           present allowance_and_deduction, with: V1::Entities::AllowanceAndDeduction
@@ -47,6 +46,7 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
           requires :amount, type: Integer
           requires :is_deduction, type: Boolean
           optional :is_active, type: Boolean, default: true
+          requires :employee_id, type: Integer
         end
 
         post do
@@ -64,6 +64,7 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
           optional :is_deduction, type: Boolean
           optional :amount, type: Integer
           optional :is_active, type: Boolean
+          requires :employee_id, type: Integer
         end
 
         put ':id' do
@@ -78,6 +79,7 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
         desc 'Delete a specific allowance and deduction for a specific employee'
         params do
           requires :id, type: Integer
+          requires :employee_id, type: Integer
         end
 
         delete ':id' do
@@ -86,5 +88,4 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
         end
       end
     end
-  end
-end
+

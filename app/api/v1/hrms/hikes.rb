@@ -15,36 +15,40 @@ class V1::Hrms::Hikes < Grape::API
   end
 
 
-  resources :employees do
-    route_param :employee_id do
-
-      # validating provided employee exists
-      before do
-        @employee = User.find_by(id: params[:employee_id])
-        error!({ error: "Employee not found" }, 404) unless @employee
-      end
-
-
       resources :hikes do
 
-        # Endpoint to get a specific hike by ID for a specific employee----------------------------------------------------------------------
+
+        # Endpoint to get a all hike for a specific employee----------------------------------------------------------------------
         desc 'Return a specific hike for a specific employee'
         params do
-          requires :id, type: Integer
+          oprional :employee_id,type: Integer
         end
-
-        get ':id' do
-          hike = User.new.get_hike(params[:employee_id], params[:id])
+        get  do
+          hike = User.new.get_all_hikes(params[:employee_id])
           present hike, with: V1::Entities::Hike
         end
 
 
-        # Endpoint to create a new allowance and deduction for a specific employee----------------------------------------------------------------------------
-        desc 'Create a new allowance and deduction for a specific employee'
+        # Endpoint to get a specific hike by ID for a specific employee----------------------------------------------------------------------
+        desc 'Return a specific hike for a specific employee'
+        params do
+          oprional :employee_id,type: Integer
+        end
+
+        get ':id' do
+          hike = User.new.get_hike(params[:id],params[:employee_id])
+          present hike, with: V1::Entities::Hike
+        end
+
+
+        # Endpoint to create a new hike for a specific employee----------------------------------------------------------------------------
+        desc 'Create a new hike for a specific employee'
         before { authenticate_admin! }
+
         params do
           requires :reason, type: String
           requires :percentage_value, type: Integer
+          requires :employee_id, type: Integer
         end
 
         post do
@@ -60,6 +64,7 @@ class V1::Hrms::Hikes < Grape::API
         params do
           optional :reason, type: String
           optional :percentage_value, type: Integer
+          requires :employee_id, type: Integer
         end
 
         put ':id' do
@@ -75,15 +80,13 @@ class V1::Hrms::Hikes < Grape::API
         desc 'Delete a specific allowance and deduction for a specific employee'
         params do
           requires :id, type: Integer
+          requires :employee_id, type: Integer
         end
 
         delete ':id' do
-          hike = Hike.new.find_and_destroy_employee_hike(id, @employee.id)
+          hike = Hike.new.find_and_destroy_employee_hike(params[:id],params[:employee_id])
           hike
         end
-
-
       end
     end
-  end
-end
+

@@ -89,6 +89,7 @@ class V1::Hrms::Users < Grape::API
         requires :expires_at, type: String
       end
 
+
       requires :payroll_attributes, type: Hash do
         requires :base_payroll, type: Integer
       end

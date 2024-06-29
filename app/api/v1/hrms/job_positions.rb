@@ -11,9 +11,9 @@ class V1::Hrms::JobPositions < Grape::API
 
   resources :job_positions do
 
-
     # Endpoint, gives all job positions----------------------------------------------------------------------------------------
     desc 'Return all job positions'
+
     params do
       optional :page, type: Integer, default: DEFAULT_PAGE, desc: 'Page number for pagination'
       optional :per_page, type: Integer, default: DEFAULT_PER_PAGE, desc: 'Number of products per page'

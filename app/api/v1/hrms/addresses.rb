@@ -15,21 +15,16 @@ class V1::Hrms::Addresses < Grape::API
   end
 
 
-  resources :employees do
-    route_param :employee_id do
-
-      # validating provided employee exists
-      before do
-        @employee = User.find_by(id: params[:employee_id])
-        error!({ error: "Employee not found" }, 404) unless @employee
-      end
-
-
       # accepts params and returns, restricted params
       resources :addresses do
 
         # Endpoint to get all addresses for a specific employee----------------------------------------------------------------------------------
         desc 'Return all addresses for a specific employee'
+
+        params do
+          optional :employee_id, type: Integer
+        end
+
         get do
           addresses = Address.new.get_all_addresses(params[:employee_id])
           present addresses, with: V1::Entities::Address, type: :full
@@ -40,9 +35,11 @@ class V1::Hrms::Addresses < Grape::API
         desc 'Return a specific address for a specific employee'
         params do
           requires :id, type: Integer
+          optional :employee_id, type: Integer
         end
+
         get ':id' do
-          address = Address.new.find_by_id(params[:employee_id], params[:id])
+          address = Address.new.find_by_id(params[:id], params[:employee_id])
           present address, with: V1::Entities::Address
         end
 
@@ -61,7 +58,6 @@ class V1::Hrms::Addresses < Grape::API
 
         post do
           permitted_params = address_permitted_attributes(params)
-          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           address = Address.new.create_address(permitted_params)
           present address, with: V1::Entities::Address, type: :full
         end
@@ -76,13 +72,11 @@ class V1::Hrms::Addresses < Grape::API
           optional :zip_code, type: String
           optional :state, type: String
           optional :country, type: String
-          optional :is_permanent, type: Boolean
         end
 
         put ':id' do
           permitted_params = address_permitted_attributes(params)
           permitted_params = permitted_params.merge(id: params[:id])
-          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           address = Address.new.find_and_update_address(permitted_params)
           present address, with: V1::Entities::Address
         end
@@ -94,10 +88,9 @@ class V1::Hrms::Addresses < Grape::API
           requires :id, type: Integer
         end
         delete ':id' do
-          address = Address.new.find_and_destroy_employee_address(params[:employee_id], params[:id])
+          address = Address.new.find_and_destroy_employee_address(params[:id])
           address
         end
       end
     end
-  end
-end
+

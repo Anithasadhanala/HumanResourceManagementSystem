@@ -11,6 +11,7 @@ class JobPosition < ApplicationRecord
 
 
   def get_all_job_positions
+
     JobPosition.all.active
   end
 

@@ -22,7 +22,8 @@ class V1::Hrms::Payrolls <  Grape::API
     desc 'Update a Payroll'
     before { authenticate_admin! }
     params do
-      optional :base_payroll, type: String
+      requires :base_payroll, type: String
+      requires  :employee_id, type: Integer
     end
 
     put ':id' do

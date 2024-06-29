@@ -13,14 +13,7 @@ class V1::Hrms::LeaveRequests < Grape::API
   end
 
 
-  resources :employees do
-    route_param :employee_id do
 
-      # validating provided employee exists
-      before do
-        @employee = User.find_by(id: params[:employee_id])
-        error!({ error: "Employee not found" }, 404) unless @employee
-      end
 
 
       resources :leave_requests do
@@ -30,19 +23,23 @@ class V1::Hrms::LeaveRequests < Grape::API
         params do
           optional :page, type: Integer, default: DEFAULT_PAGE, desc: 'Page number for pagination'
           optional :per_page, type: Integer, default: DEFAULT_PER_PAGE, desc: 'Number of products per page'
+          optional :employee_id, type: Integer
         end
 
         get do
-          leave_requests = User.new.get_all_leave_requests(@employee.id)
+          leave_requests = User.new.get_all_leave_requests(params[:employee_id])
           present(leave_requests , with: V1::Entities::LeaveRequest, type: :full)
         end
 
 
         # Endpoint to get a specific leave_requests by ID-------------------------------------------------------------------------------
         desc 'Return a specific leave_requests'
+        params do
+          optional :employee_id, type: Integer
+        end
 
         get ':id' do
-          leave_request = User.new.get_leave_request(@employee.id,params[:id])
+          leave_request = User.new.get_leave_request(params[:employee_id],params[:id])
           if leave_request
             present leave_request, with: V1::Entities::LeaveRequest
           end
@@ -61,7 +58,6 @@ class V1::Hrms::LeaveRequests < Grape::API
 
         post do
           permitted_params = leave_request_permitted_attributes(params)
-          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           leave_request = LeaveRequest.new.create_leave_request(permitted_params)
           present leave_request, with: V1::Entities::LeaveRequest, type: :full
         end
@@ -81,20 +77,24 @@ class V1::Hrms::LeaveRequests < Grape::API
           permitted_params = permitted_params.merge(id: params[:id])
           permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           leave_request = LeaveRequest.new.find_and_update_leave_request(permitted_params)
-          # present leave_request, with: V1::Entities::LeaveRequest
+           present leave_request, with: V1::Entities::LeaveRequest
         end
       end
 
 
-      resources :leaves do
+      resources :leaves_taken do
 
         # Endpoint to get for a specific employee, leave - counts  by ID-------------------------------------------------------------------------------
         desc 'Return a specific leave_requests'
+
+        params do
+          optional :employee_id, type: Integer
+        end
+
         get do
           User.new.get_leave_details(params[:employee_id])
           end
       end
     end
-  end
-end
+
 

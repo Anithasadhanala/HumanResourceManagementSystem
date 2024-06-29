@@ -2,17 +2,21 @@ class Hike < ApplicationRecord
   belongs_to :user, class_name: 'User', foreign_key: 'employee_id'
 
   def create_hike(params)
-    if Hike.exists?(employee_id: params[:employee_id], is_active: true)
-      raise RuntimeError, message: "You cannot add this Hike, employee with id:  #{params[:employee_id]} has the active hike!!!"
-    end
-    Hike.create!(params)
+
+    hike = Hike.create!(params)
+    payroll = Payroll.find_by(employee_id: params[:employee_id])
+    changed_payroll = (payroll.base_payroll.to_i*(params[:percentage_value].to_i/100.0)) + payroll.base_payroll.to_i
+    puts(params[:percentage_value])
+    puts(((params[:percentage_value].to_i)/100.0 ),changed_payroll,"++++++++++++++")
+    payroll.update(base_payroll: changed_payroll)
+    hike
   end
 
 
   def find_and_update_hike(params)
     hike = Hike.find_by(employee_id: params[:employee_id],id: params[:id])
     if hike
-      hike.update!(params.except(:is_active))
+      hike.update!(is_active: false)
       hike
     else
       raise ActiveRecord::RecordNotFound

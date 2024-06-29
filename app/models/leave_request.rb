@@ -17,7 +17,7 @@ class LeaveRequest < ApplicationRecord
   end
 
   def create_leave_request(params)
-    employee = Employee.find_by(id: params[:employee_id])
+    employee = Employee.find_by(id: Current.user.id)
     authorise_employee(employee.user_id)
     params = params.merge(requestee_id: employee.user_id)
     LeaveRequest.create!(params.except(:employee_id))
@@ -50,7 +50,7 @@ class LeaveRequest < ApplicationRecord
    elsif supervisor_id == current_user || secondary_supervisor_id == current_user
      if params[:status]
         if !status_is_valid_enum(params[:status])
-          ("not a valid status value that is requested to update")
+          raise RuntimeError,{message: "not a valid status value that is requested to update"}
         else
           if validate_leave(leave_request)
             params = params.merge(approver_id: current_user)

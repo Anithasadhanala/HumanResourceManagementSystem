@@ -16,6 +16,7 @@ class User < ApplicationRecord
   has_one :payroll
   has_many :employee_documents
 
+
   accepts_nested_attributes_for :addresses, allow_destroy: true
   accepts_nested_attributes_for :bank_credentials, allow_destroy: true
   accepts_nested_attributes_for :employee_supervisors, allow_destroy: true
@@ -23,7 +24,7 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :payroll, allow_destroy: true
   accepts_nested_attributes_for :employee_documents, allow_destroy: true
 
-  after_create :create_associated_records
+  after_create :create_associated_records, :onboarding_candidates_flag_change
 
   attr_accessor :addresses_attributes
   attr_accessor :bank_credentials_attributes
@@ -32,12 +33,20 @@ class User < ApplicationRecord
   attr_accessor :payroll_attributes
   attr_accessor :employee_documents_attributes
 
+
   validates :email, presence: true, uniqueness: true
   validates :password_digest, presence: true
   validates :role, presence: true
 
   scope :active, -> { where(is_active: true) }
   scope :approved, -> { where(status: 'approved') }
+
+  def onboarding_candidates_flag_change
+    # updating onboarding_candidates table having boolean.
+    onboarding_candidate = OnboardingCandidate.find_by(id: employee_attributes[:onboarding_candidate_id])
+    onboarding_candidate.update(is_onboarded: true)
+  end
+
 
 
   def create_associated_records
@@ -48,10 +57,25 @@ class User < ApplicationRecord
       create_associated_employee if employee_attributes.present?
       create_associated_payroll if payroll_attributes.present?
       create_associated_employee_documents if employee_documents_attributes.present?
+      create_associated_position_history
+
     rescue ActiveRecord::RecordInvalid => e
       raise ActiveRecord::Rollback, "Failed to create associated records: #{e.message}"
     end
   end
+
+
+
+  def create_associated_position_history
+    PositionHistory.create!(
+      job_position_id: employee_attributes[:job_position_id],
+      joined_at: employee_attributes[:hired_at],
+      switch_type: "Initial",
+      employee_id: id
+    )
+  end
+
+
 
   def create_associated_addresses
     Address.create!(
@@ -123,44 +147,61 @@ class User < ApplicationRecord
       employment_type: employee_attributes[:employment_type],
       job_position_id: employee_attributes[:job_position_id],
       department_id: employee_attributes[:department_id],
+      onboarding_candidate_id: employee_attributes[:onboarding_candidate_id],
       user_id: id)
   end
 
 
     def create_user(params)
-        authorise_admin
-        User.create!(
-        role: params[:role],
-        email: params[:email],
-        password: params[:password],
-        addresses_attributes: params[:addresses_attributes],
-        employee_supervisors_attributes: params[:employee_supervisors_attributes],
-        bank_credentials_attributes: params[:bank_credentials_attributes],
-        employee_attributes: params[:employee_attributes],
-        payroll_attributes: params[:payroll_attributes],
-        employee_documents_attributes: params[:employee_documents_attributes],
-        )
+      authorise_admin
+      onboarding_id = params[:employee_attributes][:onboarding_candidate_id]
+      onboarding_candidate = OnboardingCandidate.find_by(id: onboarding_id)
+
+      # check for candidate is not onboarded prev and selected candidate in OBC table.
+      if !onboarding_candidate.is_onboarded
+            User.create!(
+            role: params[:role],
+            email: params[:email],
+            password: params[:password],
+            addresses_attributes: params[:addresses_attributes],
+            employee_supervisors_attributes: params[:employee_supervisors_attributes],
+            bank_credentials_attributes: params[:bank_credentials_attributes],
+            employee_attributes: params[:employee_attributes],
+            payroll_attributes: params[:payroll_attributes],
+            employee_documents_attributes: params[:employee_documents_attributes]
+            )
+      else
+        raise ActiveRecord::RecordNotFound, {message: "no such candidate is found in the onboarding list"}
+      end
     end
 
 
   def get_leave_request(employee_id,leave_request_id)
-    authorise_employee(employee_id)
-    leave_request = LeaveRequest.find_by(requestee_id: employee_id,id: leave_request_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    end
+    leave_request = LeaveRequest.find_by(id: leave_request_id)
     leave_request
   end
 
 
 
   def get_all_leave_requests(employee_id)
-    authorise_employee(employee_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
     leave_requests = LeaveRequest.where(requestee_id: employee_id)
     leave_requests
-
   end
 
   def get_allowance_and_deduction(employee_id, compensation_id)
-    employee = Employee.find_by(id: employee_id)
-    authorise_user(employee.user_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
       allowance_deduction = AllowanceAndDeduction.find_by(id: compensation_id, is_active: true, employee_id: employee_id)
       if allowance_deduction
         allowance_deduction
@@ -170,7 +211,13 @@ class User < ApplicationRecord
   end
 
   def get_all_allowance_and_deductions(employee_id)
-    authorise_user(employee.user_id)
+
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
+
     allowance_deductions = AllowanceAndDeduction.where( is_active:true, employee_id: employee_id)
     if allowance_deductions
       allowance_deductions
@@ -180,9 +227,13 @@ class User < ApplicationRecord
   end
 
 
-  def get_hike(user_id, hike_id)
-     authorise_user(user_id)
-      allowance_deduction = Hike.find_by(id: hike_id, is_active: true, employee_id: user.id)
+  def get_hike( hike_id,employee_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
+      allowance_deduction = Hike.find_by(id: hike_id, is_active: true, employee_id: employee_id)
       if allowance_deduction
         allowance_deduction
       else
@@ -190,16 +241,38 @@ class User < ApplicationRecord
       end
   end
 
-
-  def get_all_position_histories(employee_id)
-    employee  = Employee.find(employee_id)
-    authorise_user(employee.user_id)
-    PositionHistory.where(employee_id: employee_id)
+  def get_all_hikes(employee_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
+    Hike.where( is_active: true, employee_id: employee_id)
   end
 
-  def get_position_history(employee_id, id)
-    employee  = Employee.find(employee_id)
-    authorise_user(employee.user_id)
+
+  def get_all_position_histories(employee_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
+
+    position_histories =   PositionHistory.where(employee_id: employee_id)
+    if position_histories
+      position_histories
+    else
+      raise ActiveRecord::RecordNotFound
+    end
+
+  end
+
+  def get_position_history(id,employee_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
     position_history = PositionHistory.find_by(employee_id: employee_id, id: id)
     if position_history
       position_history
@@ -211,8 +284,12 @@ class User < ApplicationRecord
 
 
   def get_leave_details(employee_id)
-    employee = Employee.find(employee_id)
-    authorise_user(employee.user_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
+
     leave_requests = LeaveRequest.where(requestee_id: employee_id).approved
 
     leave_details = leave_requests.group_by(&:leave).map do |leave, requests|
@@ -224,7 +301,6 @@ class User < ApplicationRecord
       }
     end
     {
-
       total_days_taken: leave_details.sum { |details| details[:days_taken] },
       leave_details: leave_details
     }
@@ -234,8 +310,11 @@ class User < ApplicationRecord
 
 
   def get_all_payroll_histories(employee_id)
-    employee = Employee.find(employee_id)
-    authorise_user(employee.user_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
     payrolls = Payroll.where(employee_id: employee_id).pluck(:id)
     payrolls = PayrollHistory.where(payroll_id: payrolls)
     if payrolls
@@ -245,10 +324,13 @@ class User < ApplicationRecord
     end
 
 
-  def get_payroll_history(employee_id, id)
-    employee = Employee.find(employee_id)
-    authorise_user(employee.user_id)
-    PayrollHistory.find(id)
+  def get_payroll_history( id,employee_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    end
+    payroll = Payroll.find(id)
+    authorise_user(payroll.employee_id)
+    PayrollHistory.find_by( id)
   end
 
 
@@ -265,7 +347,13 @@ class User < ApplicationRecord
 
 
 
-  def get_all_employee_documents(user)
+  def get_all_employee_documents(user_id)
+    if employee_id.present?
+      authorise_user(user_id)
+    else
+      user_id = Current.user.id
+    end
+    user = User.find(user_id)
     documents =  user.employee_documents
     if documents
       documents

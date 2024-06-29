@@ -16,21 +16,15 @@ class V1::Hrms::BankCredentials < Grape::API
   end
 
 
-  resources :employees do
-    route_param :employee_id do
-
-      # validating provided employee exists
-      before do
-        @employee = User.find_by(id: params[:employee_id])
-        error!({ error: "Employee not found" }, 404) unless @employee
-      end
-
-
-
       resources :bank_credentials do
 
         # Endpoint to get all bank_credentials for a specific employee----------------------------------------------------------------------------------
         desc 'Return all bank_credentials for a specific employee'
+
+        params do
+          optional :employee_id, type: Integer
+        end
+
         get do
           bank_credentials = Employee.new.get_all_bank_credentials(params[:employee_id])
           present bank_credentials, with: V1::Entities::BankCredential, type: :full
@@ -40,8 +34,12 @@ class V1::Hrms::BankCredentials < Grape::API
         # Endpoint to get a specific bank_credential by ID for a specific employee----------------------------------------------------------------------
         desc 'Return a specific bank_credential for a specific employee'
 
+        params do
+          optional :employee_id, type: Integer
+        end
+
         get ':id' do
-          bank_credential = Employee.new.get_bank_credential(params[:employee_id], params[:id])
+          bank_credential = Employee.new.get_bank_credential(params[:id],params[:employee_id])
           present bank_credential, with: V1::Entities::BankCredential,  type: :full
         end
 
@@ -60,7 +58,6 @@ class V1::Hrms::BankCredentials < Grape::API
 
         post do
           permitted_params = bank_credentials_permitted_attributes(params)
-          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           bank_credential = BankCredential.new.create_bank_credential(permitted_params)
           present bank_credential, with: V1::Entities::BankCredential,  type: :full
         end
@@ -81,7 +78,6 @@ class V1::Hrms::BankCredentials < Grape::API
         put ':id' do
           permitted_params = bank_credentials_permitted_attributes(params)
           permitted_params = permitted_params.merge(id: params[:id])
-          permitted_params = permitted_params.merge(employee_id: params[:employee_id])
           bank_credential = BankCredential.new.find_and_update_bank_credential(permitted_params)
           present bank_credential, with: V1::Entities::BankCredential
         end
@@ -89,15 +85,10 @@ class V1::Hrms::BankCredentials < Grape::API
 
         # Endpoint to delete a specific address for a specific employee----------------------------------------------------------------------------
         desc 'Delete a specific address for a specific employee'
-        params do
-          requires :id, type: Integer
-        end
-
         delete ':id' do
-          bank_credential = BankCredential.new.find_and_destroy_employee_bank_credential(params[:employee_id], params[:id])
+          bank_credential = BankCredential.new.find_and_destroy_employee_bank_credential(params[:id])
           bank_credential
         end
       end
     end
-  end
-end
+

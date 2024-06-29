@@ -27,6 +27,7 @@ class V1::Hrms::Openings < Grape::API
 
     # Endpoint, gives all openings----------------------------------------------------------------------------------------
     desc 'Return all openings'
+    before { authenticate_admin! }
     params do
       optional :page, type: Integer, default: DEFAULT_PAGE, desc: 'Page number for pagination'
       optional :per_page, type: Integer, default: DEFAULT_PER_PAGE, desc: 'Number of products per page'
@@ -53,7 +54,6 @@ class V1::Hrms::Openings < Grape::API
 
     # Endpoint to create a new Opening---------------------------------------------------------------------------------------
     desc 'Create a new Opening'
-    before { authenticate_admin! }
     params do
       requires :required_qualifications, type: String
       requires :max_salary, type: Integer
