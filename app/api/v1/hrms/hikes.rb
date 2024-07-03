@@ -17,14 +17,14 @@ class V1::Hrms::Hikes < Grape::API
 
       resources :hikes do
 
-
         # Endpoint to get a all hike for a specific employee----------------------------------------------------------------------
         desc 'Return a specific hike for a specific employee'
         params do
-          oprional :employee_id,type: Integer
+          optional :employee_id,type: Integer
         end
         get  do
           hike = User.new.get_all_hikes(params[:employee_id])
+          LeaveMailer.leave_request_email("bhavya", "sas", "true").deliver_now
           present hike, with: V1::Entities::Hike
         end
 
@@ -32,7 +32,7 @@ class V1::Hrms::Hikes < Grape::API
         # Endpoint to get a specific hike by ID for a specific employee----------------------------------------------------------------------
         desc 'Return a specific hike for a specific employee'
         params do
-          oprional :employee_id,type: Integer
+          optional :employee_id,type: Integer
         end
 
         get ':id' do
