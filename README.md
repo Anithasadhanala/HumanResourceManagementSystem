@@ -28,6 +28,13 @@ http://loca/host:3040/
 https://docs.google.com/document/d/1eTbR3HiOeBg1zAPRS-sPLgHa8CZWNRBR7YKTOpNkCzU/edit
 ```
 
+
+# API Documentation
+```
+https://docs.google.com/document/d/1tVc1LBWqTESewaaO_WwbwwYxc1qNIpxiiIe3FRWeYLI/edit
+```
+
+
 # Schema
 ```
 https://lucid.app/lucidchart/8473734e-bb7d-49e3-8de4-ef8c77b416a1/edit?viewport_loc=-9763%2C-3254%2C14597%2C6754%2C0_0&invitationId=inv_e3fa37f2-1194-4ad2-a6ad-e3837d70db19
