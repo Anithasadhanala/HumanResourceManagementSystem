@@ -19,7 +19,7 @@ class LeaveRequest < ApplicationRecord
   def create_leave_request(params)
     employee = Employee.find_by(id: Current.user.id)
     authorise_employee(employee.user_id)
-    params = params.merge(requestee_id: employee.user_id)
+    params = params.merge(requestee_id: Current.user.id)
     LeaveRequest.create!(params.except(:employee_id))
   end
 

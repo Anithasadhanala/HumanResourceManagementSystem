@@ -6,8 +6,6 @@ class Hike < ApplicationRecord
     hike = Hike.create!(params)
     payroll = Payroll.find_by(employee_id: params[:employee_id])
     changed_payroll = (payroll.base_payroll.to_i*(params[:percentage_value].to_i/100.0)) + payroll.base_payroll.to_i
-    puts(params[:percentage_value])
-    puts(((params[:percentage_value].to_i)/100.0 ),changed_payroll,"++++++++++++++")
     payroll.update(base_payroll: changed_payroll)
     hike
   end

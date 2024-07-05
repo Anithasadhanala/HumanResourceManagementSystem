@@ -14,17 +14,18 @@ class Employee < ApplicationRecord
 
 
   def find_by_id(employee_id)
-    employee = Employee.find_by(id: employee_id)
-      authorise_user(employee.user_id)
-      Employee.find(employee_id)
+    if employee_id.present?
+      authorise_user(employee_id)
+    else
+      employee_id = Current.user.id
+    end
+    Employee.find(employee_id)
   end
 
 
   def find_and_update_employee(params)
-    employee = Employee.find(params[:id])
-    authorise_user(employee.user_id)
-    employee_instance = find_by_id(employee.id)
-    employee_instance.update(params.except(:job_position_id))
+    employee_instance = Employee.find(Current.user.id)
+    employee_instance.update(params.except(:job_position_id, :department_id))
     employee_instance
   end
 

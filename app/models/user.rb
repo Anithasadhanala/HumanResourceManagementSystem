@@ -149,6 +149,7 @@ class User < ApplicationRecord
       department_id: employee_attributes[:department_id],
       onboarding_candidate_id: employee_attributes[:onboarding_candidate_id],
       user_id: id)
+
   end
 
 
@@ -328,8 +329,6 @@ class User < ApplicationRecord
     if employee_id.present?
       authorise_user(employee_id)
     end
-    payroll = Payroll.find(id)
-    authorise_user(payroll.employee_id)
     PayrollHistory.find_by( id)
   end
 

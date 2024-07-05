@@ -22,7 +22,7 @@ class V1::Hrms::AllowanceAndDeductions < Grape::API
 
         get do
           allowance_and_deductions = User.new.get_all_allowance_and_deductions(params[:employee_id])
-          present allowance_and_deductions, with: V1::Entities::AllowanceAndDeduction
+          present allowance_and_deductions, with: V1::Entities::AllowanceAndDeduction, type: :full
         end
 
 

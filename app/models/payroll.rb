@@ -11,7 +11,6 @@ class Payroll < ApplicationRecord
 
   def find_and_update_payroll(params)
     payroll = Payroll.find(params[:id])
-
     payroll = payroll.update!(params)
     payroll
   end

@@ -28,10 +28,10 @@ class V1::Hrms::Payrolls <  Grape::API
 
     put ':id' do
       permitted_params = ActionController::Parameters.new(params).permit(
-        :base_payroll)
+        :base_payroll, :employee_id)
       permitted_params = permitted_params.merge(id: params[:id])
       payroll = Payroll.new.find_and_update_payroll(permitted_params)
-      present payroll, with: V1::Entities::Payroll
+      present payroll, {message: "updated the  payroll of the employee "}
     end
   end
 end

@@ -24,8 +24,7 @@ class V1::Hrms::Hikes < Grape::API
         end
         get  do
           hike = User.new.get_all_hikes(params[:employee_id])
-          LeaveMailer.leave_request_email("bhavya", "sas", "true").deliver_now
-          present hike, with: V1::Entities::Hike
+          present hike, with: V1::Entities::Hike, type: :full
         end
 
 

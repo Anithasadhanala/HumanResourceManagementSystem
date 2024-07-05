@@ -41,7 +41,7 @@ class Address < ApplicationRecord
 
 
   def create_address(params)
-    validate_address =  employee_has_active_address_type?(params[:employee_id], params[:is_permanent])
+    validate_address =  employee_has_active_address_type?(Current.user.id, params[:is_permanent])
     if validate_address
       raise RuntimeError, {message: "You cannot add this address type, already exists"}
     else
@@ -52,7 +52,7 @@ class Address < ApplicationRecord
 
 
   def find_and_update_address(params)
-    address = find_by_id(params[:id])
+    address = find_by_id(params[:id], Current.user.id)
     if address
       params  = params.merge(employee_id: Current.user.id)
       address.update(params)
@@ -62,7 +62,7 @@ class Address < ApplicationRecord
 
 
   def find_and_destroy_employee_address( id)
-    address = find_by_id(id)
+    address = find_by_id(id, Current.user.id)
     if address
       address.update(is_active: false)
       { message: "address deleted successfully with id : #{address.id}" }

@@ -32,7 +32,7 @@ class BankCredential < ApplicationRecord
 
 
   def find_and_update_bank_credential(params)
-    bank_credential = Employee.new.get_bank_credential(params[:id])
+    bank_credential = Employee.new.get_bank_credential(params[:id],Current.user.id)
     if bank_credential
       bank_credential.update(params)
       bank_credential
@@ -43,7 +43,7 @@ class BankCredential < ApplicationRecord
 
 
   def find_and_destroy_employee_bank_credential( id)
-    bank_credential = Employee.new.get_bank_credential(id)
+    bank_credential = Employee.new.get_bank_credential(id,Current.user.id)
     if bank_credential
       bank_credential.update(is_active: false)
       { message: 'bank credential deleted successfully' }

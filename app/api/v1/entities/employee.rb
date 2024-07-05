@@ -5,7 +5,6 @@ class V1::Entities::Employee < Grape::Entity
   expose :last_name
   expose :phone
   expose :hired_at
-  expose :onboarding_employee_id
   expose :personal_email
   expose :emergency_contact_phone
   expose :emergency_contact_name

@@ -15,7 +15,6 @@ class V1::Hrms::Employees <  Grape::API
         :qualifications,
         :employee_type,
         :employment_type,
-        :department_id,
         :first_name,
         :last_name
       )
@@ -27,8 +26,12 @@ class V1::Hrms::Employees <  Grape::API
     # Endpoint to get a specific employee by ID-------------------------------------------------------------------------------
     desc 'Return a specific employee'
 
-    get ':id' do
-      employee = Employee.new.find_by_id(params[:id])
+    params do
+      optional :employee_id, type: Integer
+    end
+
+    get  do
+      employee = Employee.new.find_by_id(params[:employee_id])
       present employee, with: V1::Entities::Employee
     end
 
@@ -51,14 +54,12 @@ class V1::Hrms::Employees <  Grape::API
         optional :qualifications, type: String
         optional :employee_type, type: String
         optional :employment_type, type: String
-        optional :department_id, type: Integer
         optional :first_name, type: String
         optional :last_name, type: String
       end
 
-    put ':id' do
+    put  do
       permitted_params = employee_details_permitted_attributes(params)
-      permitted_params = permitted_params.merge(id: params[:id])
       employee = Employee.new.find_and_update_employee(permitted_params)
       present employee, with: V1::Entities::Employee
     end
